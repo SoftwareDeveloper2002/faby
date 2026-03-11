@@ -13,6 +13,8 @@ type PaymentDetails = {
   returnPath: string;
 };
 
+const DEFAULT_PAYMONGO_API_BASE = 'http://54.179.214.202';
+
 @Component({
   selector: 'app-payment',
   imports: [CommonModule, FormsModule],
@@ -101,15 +103,29 @@ export class Payment {
       },
     };
 
-    const primary = await this.requestCheckout('/api/paymongo/checkout-session', payload);
-    let response = primary;
+    const candidateUrls = this.getCheckoutEndpointCandidates();
+    let response: Response | null = null;
 
-    if (!response || response.status === 404) {
-      response = await this.requestCheckout('http://localhost:3100/api/paymongo/checkout-session', payload);
+    for (const url of candidateUrls) {
+      const candidateResponse = await this.requestCheckout(url, payload);
+
+      if (!candidateResponse) {
+        continue;
+      }
+
+      if (candidateResponse.ok) {
+        response = candidateResponse;
+        break;
+      }
+
+      if (candidateResponse.status !== 404) {
+        response = candidateResponse;
+        break;
+      }
     }
 
     if (!response) {
-      throw new Error('Unable to reach payment API. Ensure PayMongo API server is running on port 3100.');
+      throw new Error('Unable to reach payment API. Ensure your backend is running and reachable at http://54.179.214.202 or set localStorage.paymongoApiBaseUrl to your backend URL.');
     }
 
     if (!response.ok) {
@@ -141,7 +157,7 @@ export class Payment {
     }
 
     if (response.status === 404) {
-      return 'Payment API route not found on Angular server. Restart frontend with proxy or keep API running on port 3100.';
+      return 'Payment API route not found. If deployed on Firebase Hosting, set localStorage.paymongoApiBaseUrl to your public backend URL.';
     }
 
     return 'Unable to initialize PayMongo checkout. Please try again.';
@@ -159,6 +175,27 @@ export class Payment {
     } catch {
       return null;
     }
+  }
+
+  private getCheckoutEndpointCandidates(): string[] {
+    const endpointPath = '/api/paymongo/checkout-session';
+    const candidates: string[] = [];
+
+    const configuredBase = localStorage.getItem('paymongoApiBaseUrl')?.trim();
+    if (configuredBase) {
+      candidates.push(this.composeEndpoint(configuredBase, endpointPath));
+    }
+
+    candidates.push(this.composeEndpoint(DEFAULT_PAYMONGO_API_BASE, endpointPath));
+
+    candidates.push(endpointPath);
+
+    return [...new Set(candidates)];
+  }
+
+  private composeEndpoint(baseUrl: string, endpointPath: string): string {
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return `${normalizedBase}${endpointPath}`;
   }
 
   private getErrorMessage(error: unknown): string {
