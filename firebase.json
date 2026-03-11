@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "dist/faby-front/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
