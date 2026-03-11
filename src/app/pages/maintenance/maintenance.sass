@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Cinzel:wght@600;700&display=swap')
+
+:host
+	display: block
+	min-height: 100dvh
+
+.maintenance-page
+	--bg-1: #f1e8cf
+	--bg-2: #dbc79f
+	--ink: #3d3120
+	--ink-soft: #6a5537
+	--surface: #fffaf0
+	--line: #c9af7c
+	--accent: #8c6a3d
+	--accent-soft: #f7ecd5
+	position: relative
+	min-height: 100dvh
+	display: grid
+	place-items: center
+	overflow: hidden
+	padding: 2rem
+	background: radial-gradient(circle at 82% 8%, #ffffff 0%, transparent 35%), linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 100%)
+	font-family: 'Manrope', sans-serif
+
+.maintenance-page__bg
+	position: absolute
+	inset: 0
+	pointer-events: none
+
+.flare
+	position: absolute
+	border-radius: 50%
+	opacity: .4
+	filter: blur(1px)
+
+.flare--left
+	width: 20rem
+	height: 20rem
+	left: -6rem
+	top: -6rem
+	background: #d5bb84
+	animation: bob 12s ease-in-out infinite alternate
+
+.flare--right
+	width: 17rem
+	height: 17rem
+	right: -5rem
+	bottom: -4rem
+	background: #e6d2a4
+	animation: bob 14s ease-in-out infinite alternate-reverse
+
+.noise
+	position: absolute
+	inset: 0
+	background-image: radial-gradient(rgba(255, 255, 255, .32) 1px, transparent 1px)
+	background-size: 4px 4px
+	opacity: .2
+
+.maintenance-card
+	position: relative
+	z-index: 1
+	width: min(100%, 44rem)
+	padding: clamp(1.5rem, 3.6vw, 3rem)
+	border: 2px solid var(--line)
+	border-radius: 1.4rem
+	text-align: center
+	background: color-mix(in srgb, var(--surface) 92%, white)
+	box-shadow: 0 24px 45px rgba(62, 45, 24, .16)
+
+.badge
+	display: inline-block
+	margin: 0 0 .9rem
+	padding: .35rem .75rem
+	border-radius: 999px
+	background: var(--accent-soft)
+	color: var(--accent)
+	font-size: .82rem
+	font-weight: 700
+	letter-spacing: .1em
+	text-transform: uppercase
+	opacity: 0
+	transform: translateY(10px)
+	animation: rise .55s ease forwards
+
+h1
+	margin: 0 0 .9rem
+	color: var(--ink)
+	font-family: 'Cinzel', serif
+	font-size: clamp(1.8rem, 6vw, 3.5rem)
+	line-height: 1.12
+	letter-spacing: .03em
+	text-wrap: balance
+	opacity: 0
+	transform: translateY(10px)
+	animation: rise .65s ease .08s forwards
+
+.message
+	margin: 0 auto
+	max-width: 36ch
+	color: var(--ink-soft)
+	font-size: clamp(1rem, 2.3vw, 1.14rem)
+	line-height: 1.55
+	font-weight: 500
+	opacity: 0
+	transform: translateY(10px)
+	animation: rise .65s ease .16s forwards
+
+.company-block
+	margin: 1.5rem auto 0
+	padding: 1rem 1rem 1.1rem
+	max-width: 27rem
+	border: 1px solid #d9c29a
+	border-radius: .9rem
+	background: rgba(255, 255, 255, .76)
+	opacity: 0
+	transform: translateY(10px)
+	animation: rise .65s ease .24s forwards
+
+.company-label
+	margin: 0
+	color: var(--ink-soft)
+	font-size: .84rem
+	letter-spacing: .12em
+	text-transform: uppercase
+
+.company-name
+	margin: .35rem 0 .4rem
+	color: var(--ink)
+	font-size: clamp(1.2rem, 3.6vw, 1.55rem)
+	font-family: 'Cinzel', serif
+	font-weight: 700
+	letter-spacing: .02em
+
+.company-link
+	color: var(--accent)
+	font-weight: 800
+	text-underline-offset: 3px
+	transition: color .2s ease
+
+.company-link:hover
+	color: #6f512d
+
+@media (max-width: 640px)
+	.maintenance-page
+		padding: 1rem
+
+	.maintenance-card
+		border-radius: 1rem
+		padding: 1.25rem
+
+@keyframes rise
+	to
+		opacity: 1
+		transform: translateY(0)
+
+@keyframes bob
+	from
+		transform: translate3d(0, 0, 0) scale(1)
+	to
+		transform: translate3d(8px, 14px, 0) scale(1.08)

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap')
+
+:host
+	display: block
+	min-height: 100dvh
+
+.notfound-page
+	--bg-1: #ffe9cc
+	--bg-2: #ffd3a3
+	--ink: #1f2a44
+	--ink-soft: #314266
+	--surface: #fffaf4
+	--line: #efc089
+	--cta: #ef6f2e
+	--cta-ink: #fff6ed
+	position: relative
+	display: grid
+	place-items: center
+	min-height: 100dvh
+	overflow: hidden
+	padding: 2rem
+	background: radial-gradient(circle at 15% 15%, #fff7ed 0%, transparent 38%), linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%)
+	font-family: 'Space Grotesk', sans-serif
+
+.notfound-page__bg
+	position: absolute
+	inset: 0
+	pointer-events: none
+
+.blob
+	position: absolute
+	border-radius: 50%
+	filter: blur(2px)
+	opacity: .5
+
+.blob--one
+	width: 18rem
+	height: 18rem
+	right: -5rem
+	top: -5rem
+	background: #ff9f5a
+	animation: drift 11s ease-in-out infinite alternate
+
+.blob--two
+	width: 16rem
+	height: 16rem
+	left: -5rem
+	bottom: -6rem
+	background: #ffcf96
+	animation: drift 13s ease-in-out infinite alternate-reverse
+
+.grid
+	position: absolute
+	inset: 0
+	background-image: linear-gradient(rgba(255, 255, 255, .34) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .34) 1px, transparent 1px)
+	background-size: 48px 48px
+	opacity: .35
+
+.notfound-card
+	position: relative
+	z-index: 1
+	width: min(100%, 42rem)
+	padding: clamp(1.5rem, 3vw, 3rem)
+	border: 2px solid var(--line)
+	border-radius: 1.5rem
+	background: color-mix(in srgb, var(--surface) 92%, white)
+	box-shadow: 0 22px 50px rgba(39, 34, 25, .18)
+	text-align: center
+
+.eyebrow
+	margin: 0
+	color: var(--ink-soft)
+	font-size: .875rem
+	letter-spacing: .16em
+	text-transform: uppercase
+	opacity: 0
+	transform: translateY(12px)
+	animation: reveal .6s ease forwards
+
+h1
+	margin: .6rem 0 .8rem
+	color: var(--ink)
+	font-family: 'Syne', sans-serif
+	font-size: clamp(2rem, 7vw, 4rem)
+	line-height: .95
+	opacity: 0
+	transform: translateY(12px)
+	animation: reveal .7s ease .08s forwards
+
+.description
+	max-width: 33ch
+	margin: 0 auto
+	color: var(--ink-soft)
+	font-size: clamp(1rem, 2.6vw, 1.16rem)
+	line-height: 1.55
+	opacity: 0
+	transform: translateY(12px)
+	animation: reveal .7s ease .16s forwards
+
+.actions
+	display: flex
+	flex-wrap: wrap
+	justify-content: center
+	gap: .75rem
+	margin: 1.5rem 0 1rem
+	opacity: 0
+	transform: translateY(12px)
+	animation: reveal .7s ease .24s forwards
+
+.btn
+	display: inline-flex
+	align-items: center
+	justify-content: center
+	min-width: 11rem
+	padding: .72rem 1.1rem
+	border-radius: .75rem
+	border: 2px solid transparent
+	text-decoration: none
+	font-weight: 700
+	transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease
+
+.btn:hover
+	transform: translateY(-2px)
+
+.btn--primary
+	background: var(--cta)
+	color: var(--cta-ink)
+	box-shadow: 0 10px 25px rgba(239, 111, 46, .35)
+
+.btn--primary:hover
+	background: #d85f22
+
+.btn--ghost
+	border-color: #e9a96b
+	color: var(--ink)
+	background: rgba(255, 255, 255, .68)
+
+.btn--ghost:hover
+	background: rgba(255, 255, 255, .95)
+
+.hint
+	margin: .2rem 0 0
+	color: var(--ink-soft)
+	font-size: .92rem
+	opacity: .9
+	opacity: 0
+	transform: translateY(12px)
+	animation: reveal .7s ease .32s forwards
+
+@media (max-width: 640px)
+	.notfound-page
+		padding: 1.1rem
+
+	.notfound-card
+		border-radius: 1rem
+		padding: 1.25rem
+
+	.btn
+		width: 100%
+
+@keyframes reveal
+	to
+		opacity: 1
+		transform: translateY(0)
+
+@keyframes drift
+	from
+		transform: translate3d(0, 0, 0) scale(1)
+	to
+		transform: translate3d(-12px, 14px, 0) scale(1.08)
