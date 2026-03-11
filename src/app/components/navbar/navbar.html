@@ -1,0 +1,38 @@
+<header class="navbar-wrap">
+	<nav class="navbar" aria-label="Main navigation">
+		<a class="brand" routerLink="/">
+			<span class="brand-dot"></span>
+			<span class="brand-text">Faby</span>
+		</a>
+
+		<div class="menu-links">
+			<a routerLink="/" class="nav-link">Home</a>
+			<a routerLink="/motorcycle-list" class="nav-link">Motorcycle</a>
+      <a routerLink="/room-list" class="nav-link">Rooms</a>
+      <a routerLink="/tent-list" class="nav-link">Tents</a>
+      <a routerLink="/table-chair-list" class="nav-link">Tables & Chair</a>
+		</div>
+
+		<div class="auth-area">
+			@if (!isAuthenticated) {
+				<button type="button" class="login-btn" (click)="login()">Login</button>
+			} @else {
+				<div class="user-menu">
+					<button type="button" class="user-trigger" (click)="toggleDropdown($event)">
+						<span class="avatar">{{ userInitials }}</span>
+						<span class="user-name">{{ userName }}</span>
+						<span class="caret" [class.open]="dropdownOpen">▾</span>
+					</button>
+
+					@if (dropdownOpen) {
+						<div class="dropdown" role="menu">
+							<button type="button" role="menuitem" (click)="goToProfile()">Profile</button>
+							<button type="button" role="menuitem" (click)="goToProducts()">My Booking/Service</button>
+							<button type="button" role="menuitem" class="logout-item" (click)="logout()">Logout</button>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	</nav>
+</header>

@@ -1,0 +1,348 @@
+<app-admin-navbar></app-admin-navbar>
+
+<main class="admin-products" aria-labelledby="products-title">
+	<section class="hero">
+		<p class="eyebrow">Admin Products</p>
+		<h1 id="products-title">Product List and Category Setup</h1>
+		<p class="hero-copy">Add rental products with shared required fields and optional category-specific details.</p>
+	</section>
+
+	<section class="form-panel" aria-label="Add product form">
+		<h2>Add Product</h2>
+
+		<form class="product-form" (ngSubmit)="addProduct()">
+			<label>
+				Product Image
+				<input type="file" accept="image/*" (change)="onAddImageSelected($event)" />
+			</label>
+
+			@if (addImagePreview) {
+				<div class="image-preview-wrap">
+					<img class="image-preview" [src]="addImagePreview" alt="Selected product preview" />
+				</div>
+			}
+
+			<div class="row two">
+				<label>
+					Category
+					<select name="category" [(ngModel)]="form.category" (ngModelChange)="onCategoryChange()">
+						@for (category of categories; track category.value) {
+							<option [value]="category.value">{{ category.label }}</option>
+						}
+					</select>
+				</label>
+
+				<label>
+					Rate Per Day (PHP)
+					<input type="number" min="1" name="ratePerDay" [(ngModel)]="form.ratePerDay" placeholder="e.g. 450" />
+				</label>
+			</div>
+
+			<label>
+				Title
+				<input type="text" name="title" [(ngModel)]="form.title" placeholder="Product title" />
+			</label>
+
+			<label>
+				Description
+				<textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="Describe this rental product"></textarea>
+			</label>
+
+			@if (form.category === 'motorcycle') {
+				<div class="optional-block">
+					<p class="optional-title">Optional for Motorcycle</p>
+					<div class="row three">
+						<label>
+							Engine CC
+							<input type="number" min="0" name="motorcycleEngineCc" [(ngModel)]="form.motorcycleEngineCc" placeholder="e.g. 150" />
+						</label>
+
+						<label>
+							Transmission
+							<input type="text" name="motorcycleTransmission" [(ngModel)]="form.motorcycleTransmission" placeholder="Manual / Automatic" />
+						</label>
+
+						<label class="toggle">
+							Helmet Included
+							<input type="checkbox" name="motorcycleHelmetIncluded" [(ngModel)]="form.motorcycleHelmetIncluded" />
+						</label>
+					</div>
+				</div>
+			}
+
+			@if (form.category === 'tent') {
+				<div class="optional-block">
+					<p class="optional-title">Optional for Camping Tents</p>
+					<div class="row three">
+						<label>
+							Capacity
+							<input type="text" name="tentCapacity" [(ngModel)]="form.tentCapacity" placeholder="2 to 4 persons" />
+						</label>
+
+						<label>
+							Size
+							<input type="text" name="tentSize" [(ngModel)]="form.tentSize" placeholder="Medium Dome" />
+						</label>
+
+						<label>
+							Weather Rating
+							<input type="text" name="tentWeatherRating" [(ngModel)]="form.tentWeatherRating" placeholder="Rainproof / 3-season" />
+						</label>
+					</div>
+				</div>
+			}
+
+			@if (form.category === 'table_chair') {
+				<div class="optional-block">
+					<p class="optional-title">Optional for Tables & Chairs</p>
+					<div class="row three">
+						<label>
+							Table Count
+							<input type="number" min="0" name="tableCount" [(ngModel)]="form.tableCount" placeholder="e.g. 5" />
+						</label>
+
+						<label>
+							Chair Count
+							<input type="number" min="0" name="chairCount" [(ngModel)]="form.chairCount" placeholder="e.g. 30" />
+						</label>
+
+						<label>
+							Material
+							<input type="text" name="tableChairMaterial" [(ngModel)]="form.tableChairMaterial" placeholder="Plastic / Wood / Mixed" />
+						</label>
+					</div>
+				</div>
+			}
+
+			@if (form.category === 'inn') {
+				<div class="optional-block">
+					<p class="optional-title">Optional for Inn</p>
+					<div class="row three">
+						<label>
+							Room Type
+							<input type="text" name="innRoomType" [(ngModel)]="form.innRoomType" placeholder="Standard / Family Room" />
+						</label>
+
+						<label>
+							Max Guests
+							<input type="number" min="1" name="innMaxGuests" [(ngModel)]="form.innMaxGuests" placeholder="e.g. 4" />
+						</label>
+
+						<label class="toggle">
+							Breakfast Included
+							<input type="checkbox" name="innHasBreakfast" [(ngModel)]="form.innHasBreakfast" />
+						</label>
+					</div>
+				</div>
+			}
+
+			@if (errorMessage) {
+				<p class="message error">{{ errorMessage }}</p>
+			}
+
+			@if (successMessage) {
+				<p class="message success">{{ successMessage }}</p>
+			}
+
+			<button type="submit" [disabled]="isSaving">{{ isSaving ? 'Saving...' : 'Add Product' }}</button>
+		</form>
+	</section>
+
+	<section class="guide-panel" aria-label="Data requirements guide">
+		<h2>What Data Is Needed</h2>
+		<p><strong>Required for all categories:</strong> title, description, rate per day.</p>
+		<p><strong>Optional by category:</strong> motorcycle specs, tent specs, table/chair counts, or inn room details.</p>
+	</section>
+
+	<section class="list-panel" aria-label="Existing products list">
+		<h2>Product List</h2>
+
+		@if (isLoading) {
+			<p class="empty">Loading products...</p>
+		} @else if (products.length === 0) {
+			<p class="empty">No products yet. Add your first rental product above.</p>
+		} @else {
+			<div class="product-grid">
+				@for (product of products; track product.id) {
+					<article class="product-card">
+						@if (product.imageUrl) {
+							<img class="card-image" [src]="product.imageUrl" [alt]="product.title + ' image'" />
+						}
+
+						<div class="head">
+							<h3>{{ product.title }}</h3>
+							<p class="chip">{{ getCategoryLabel(product.category) }}</p>
+						</div>
+
+						<p class="description">{{ product.description }}</p>
+						<p class="rate">{{ formatRate(product.ratePerDay) }} <span>/ day</span></p>
+
+						<div class="details">
+							@for (detail of getDetailEntries(product); track detail.key) {
+								<p>
+									<span>{{ formatDetailLabel(detail.key) }}:</span>
+									<strong>{{ detail.value }}</strong>
+								</p>
+							}
+						</div>
+
+						<div class="card-actions">
+							<button type="button" class="action-edit" (click)="openEditModal(product)">Edit</button>
+							<button
+								type="button"
+								class="action-delete"
+								(click)="deleteProduct(product)"
+								[disabled]="deletingProductId === product.id"
+							>
+								{{ deletingProductId === product.id ? 'Deleting...' : 'Delete' }}
+							</button>
+						</div>
+					</article>
+				}
+			</div>
+		}
+	</section>
+
+	@if (isEditModalOpen) {
+		<div class="modal-backdrop" (click)="closeEditModal()" aria-hidden="true"></div>
+		<section class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-product-title">
+			<header class="modal-head">
+				<h2 id="edit-product-title">Edit Product</h2>
+				<button type="button" class="modal-close" (click)="closeEditModal()">Close</button>
+			</header>
+
+			<form class="product-form" (ngSubmit)="updateProduct()">
+				<label>
+					Product Image
+					<input type="file" accept="image/*" (change)="onEditImageSelected($event)" />
+				</label>
+
+				@if (editImagePreview) {
+					<div class="image-preview-wrap">
+						<img class="image-preview" [src]="editImagePreview" alt="Edit product preview" />
+						<button type="button" class="btn-secondary small" (click)="clearEditImage()">Remove image</button>
+					</div>
+				}
+
+				<div class="row two">
+					<label>
+						Category
+						<select name="editCategory" [(ngModel)]="editForm.category">
+							@for (category of categories; track category.value) {
+								<option [value]="category.value">{{ category.label }}</option>
+							}
+						</select>
+					</label>
+
+					<label>
+						Rate Per Day (PHP)
+						<input type="number" min="1" name="editRatePerDay" [(ngModel)]="editForm.ratePerDay" />
+					</label>
+				</div>
+
+				<label>
+					Title
+					<input type="text" name="editTitle" [(ngModel)]="editForm.title" />
+				</label>
+
+				<label>
+					Description
+					<textarea name="editDescription" [(ngModel)]="editForm.description" rows="3"></textarea>
+				</label>
+
+				@if (editForm.category === 'motorcycle') {
+					<div class="optional-block">
+						<p class="optional-title">Optional for Motorcycle</p>
+						<div class="row three">
+							<label>
+								Engine CC
+								<input type="number" min="0" name="editMotorcycleEngineCc" [(ngModel)]="editForm.motorcycleEngineCc" />
+							</label>
+
+							<label>
+								Transmission
+								<input type="text" name="editMotorcycleTransmission" [(ngModel)]="editForm.motorcycleTransmission" />
+							</label>
+
+							<label class="toggle">
+								Helmet Included
+								<input type="checkbox" name="editMotorcycleHelmetIncluded" [(ngModel)]="editForm.motorcycleHelmetIncluded" />
+							</label>
+						</div>
+					</div>
+				}
+
+				@if (editForm.category === 'tent') {
+					<div class="optional-block">
+						<p class="optional-title">Optional for Camping Tents</p>
+						<div class="row three">
+							<label>
+								Capacity
+								<input type="text" name="editTentCapacity" [(ngModel)]="editForm.tentCapacity" />
+							</label>
+
+							<label>
+								Size
+								<input type="text" name="editTentSize" [(ngModel)]="editForm.tentSize" />
+							</label>
+
+							<label>
+								Weather Rating
+								<input type="text" name="editTentWeatherRating" [(ngModel)]="editForm.tentWeatherRating" />
+							</label>
+						</div>
+					</div>
+				}
+
+				@if (editForm.category === 'table_chair') {
+					<div class="optional-block">
+						<p class="optional-title">Optional for Tables & Chairs</p>
+						<div class="row three">
+							<label>
+								Table Count
+								<input type="number" min="0" name="editTableCount" [(ngModel)]="editForm.tableCount" />
+							</label>
+
+							<label>
+								Chair Count
+								<input type="number" min="0" name="editChairCount" [(ngModel)]="editForm.chairCount" />
+							</label>
+
+							<label>
+								Material
+								<input type="text" name="editTableChairMaterial" [(ngModel)]="editForm.tableChairMaterial" />
+							</label>
+						</div>
+					</div>
+				}
+
+				@if (editForm.category === 'inn') {
+					<div class="optional-block">
+						<p class="optional-title">Optional for Inn</p>
+						<div class="row three">
+							<label>
+								Room Type
+								<input type="text" name="editInnRoomType" [(ngModel)]="editForm.innRoomType" />
+							</label>
+
+							<label>
+								Max Guests
+								<input type="number" min="1" name="editInnMaxGuests" [(ngModel)]="editForm.innMaxGuests" />
+							</label>
+
+							<label class="toggle">
+								Breakfast Included
+								<input type="checkbox" name="editInnHasBreakfast" [(ngModel)]="editForm.innHasBreakfast" />
+							</label>
+						</div>
+					</div>
+				}
+
+				<div class="modal-actions">
+					<button type="button" class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+					<button type="submit" [disabled]="isUpdating">{{ isUpdating ? 'Updating...' : 'Save Changes' }}</button>
+				</div>
+			</form>
+		</section>
+	}
+</main>

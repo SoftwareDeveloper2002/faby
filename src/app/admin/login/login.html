@@ -1,0 +1,44 @@
+<main class="admin-login-page" aria-labelledby="admin-login-title">
+	<section class="admin-login-card">
+		<p class="eyebrow">Admin Portal</p>
+		<h1 id="admin-login-title">Sign in to Faby Admin</h1>
+
+		<form class="admin-login-form" (ngSubmit)="signInWithEmailPassword()">
+			<label>
+				Email
+				<input
+					type="email"
+					name="email"
+					[(ngModel)]="email"
+					autocomplete="email"
+					placeholder="admin@montingbalay.com"
+					required
+				/>
+			</label>
+
+			<label>
+				Password
+				<input
+					type="password"
+					name="password"
+					[(ngModel)]="password"
+					autocomplete="current-password"
+					placeholder="Enter your password"
+					required
+				/>
+			</label>
+
+			@if (errorMessage) {
+				<p class="message error">{{ errorMessage }}</p>
+			}
+
+			@if (successMessage) {
+				<p class="message success">{{ successMessage }}</p>
+			}
+
+			<button type="submit" [disabled]="isSigningIn">
+				{{ isSigningIn ? 'Signing in...' : 'Sign In' }}
+			</button>
+		</form>
+	</section>
+</main>

@@ -1,0 +1,235 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.tent-page
+	--bg-1: #f8f0e3
+	--bg-2: #ecd5b5
+	--panel: #fff9f1
+	--line: #d8bc99
+	--ink: #2f2114
+	--ink-soft: #6b5438
+	--accent: #975a2c
+	min-height: 100dvh
+	padding: clamp(1rem, 3vw, 2rem)
+	background: linear-gradient(145deg, var(--bg-1), var(--bg-2))
+	color: var(--ink)
+
+.hero
+	max-width: 64rem
+	margin: 0 auto 1rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 800
+	letter-spacing: .14em
+	text-transform: uppercase
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.8rem, 4.5vw, 2.8rem)
+
+.hero-copy
+	margin: .6rem 0 0
+	color: var(--ink-soft)
+
+.card-grid
+	max-width: 64rem
+	margin: 0 auto
+	display: grid
+	gap: .95rem
+	grid-template-columns: repeat(3, minmax(0, 1fr))
+
+.item-card
+	padding: 1rem
+	border: 1px solid var(--line)
+	border-radius: .95rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 14px 28px rgba(76, 51, 29, .12)
+
+.card-image
+	width: 100%
+	height: 9rem
+	object-fit: cover
+	border-radius: .7rem
+	border: 1px solid var(--line)
+	margin-bottom: .6rem
+
+.item-card.popular
+	border-color: #c99762
+
+.top-row
+	display: flex
+	justify-content: space-between
+	gap: .45rem
+	align-items: center
+
+.top-row h2
+	margin: 0
+	font-size: 1.1rem
+
+.badge
+	margin: 0
+	font-size: .72rem
+	font-weight: 800
+	letter-spacing: .08em
+	text-transform: uppercase
+	padding: .22rem .45rem
+	border-radius: 999px
+	background: #f6e2c9
+	color: #7a471f
+
+.meta
+	margin: .4rem 0
+	font-size: .9rem
+	color: var(--ink-soft)
+
+.description
+	margin: 0
+	line-height: 1.5
+
+ul
+	margin: .6rem 0
+	padding-left: 1rem
+
+li
+	margin-bottom: .2rem
+	color: var(--ink-soft)
+	font-size: .88rem
+
+.bottom-row
+	display: flex
+	justify-content: space-between
+	align-items: center
+	gap: .65rem
+
+.price
+	margin: 0
+	font-size: 1.18rem
+	font-weight: 800
+	color: var(--accent)
+
+.price span
+	font-size: .84rem
+	font-weight: 600
+	color: var(--ink-soft)
+
+.btn
+	text-decoration: none
+	padding: .54rem .78rem
+	border-radius: .58rem
+	font-size: .84rem
+	font-weight: 700
+	background: linear-gradient(135deg, #a06333, #844920)
+	color: #fff
+	border: 0
+	cursor: pointer
+
+.item-card .btn:focus-visible
+	outline: 2px solid #f3d3af
+	outline-offset: 2px
+
+.booking-panel
+	max-width: 64rem
+	margin: 1.2rem auto 0
+	padding: 1rem
+	border: 1px solid var(--line)
+	border-radius: .95rem
+	background: color-mix(in srgb, var(--panel) 92%, white)
+	box-shadow: 0 14px 28px rgba(76, 51, 29, .12)
+
+.booking-panel h2
+	margin: 0
+	font-size: 1.35rem
+
+.booking-copy
+	margin: .4rem 0 .9rem
+	color: var(--ink-soft)
+
+.booking-form label
+	display: flex
+	flex-direction: column
+	gap: .35rem
+	font-weight: 700
+	font-size: .9rem
+	color: var(--ink)
+
+.booking-form select,
+.booking-form input
+	width: 100%
+	padding: .6rem .65rem
+	border: 1px solid var(--line)
+	border-radius: .5rem
+	background: #fff
+	font-size: .92rem
+	color: var(--ink)
+
+.booking-form select:focus,
+.booking-form input:focus
+	outline: 2px solid #e4bb8f
+	outline-offset: 1px
+
+.date-grid
+	margin-top: .8rem
+	display: grid
+	gap: .75rem
+	grid-template-columns: repeat(2, minmax(0, 1fr))
+
+.booking-error
+	margin: .7rem 0
+	padding: .5rem .6rem
+	border-radius: .5rem
+	background: #fde2e2
+	color: #8d2323
+	font-weight: 700
+	font-size: .88rem
+
+.summary
+	margin-top: .8rem
+	padding: .75rem
+	border-radius: .7rem
+	background: #fff
+	border: 1px dashed var(--line)
+	display: grid
+	gap: .3rem
+
+.summary p
+	margin: 0
+	display: flex
+	justify-content: space-between
+	gap: .6rem
+
+.summary span
+	color: var(--ink-soft)
+
+.summary .total
+	margin-top: .25rem
+	padding-top: .5rem
+	border-top: 1px solid var(--line)
+	font-weight: 800
+	color: var(--accent)
+
+.book-now
+	margin-top: .95rem
+	width: 100%
+	padding: .72rem .9rem
+	border: 0
+	border-radius: .6rem
+	font-size: .95rem
+	font-weight: 800
+	background: linear-gradient(135deg, #a06333, #844920)
+	color: #fff
+	cursor: pointer
+
+.book-now:focus-visible
+	outline: 2px solid #f3d3af
+	outline-offset: 2px
+
+@media (max-width: 980px)
+	.card-grid
+		grid-template-columns: 1fr
+
+	.date-grid
+		grid-template-columns: 1fr

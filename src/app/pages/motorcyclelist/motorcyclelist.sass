@@ -1,0 +1,218 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.motorcycle-page
+	--bg-1: #f8efe2
+	--bg-2: #efd7b4
+	--bg-3: #dcb286
+	--panel: #fff9f0
+	--ink: #312113
+	--ink-soft: #6b5336
+	--line: #d9bc98
+	--accent: #a05f2d
+	--accent-deep: #8a4d21
+	min-height: 100dvh
+	padding: clamp(1rem, 3.2vw, 2.4rem)
+	background: radial-gradient(circle at 12% 10%, rgba(255, 255, 255, .82), transparent 32%), radial-gradient(circle at 86% 90%, rgba(255, 247, 231, .65), transparent 40%), linear-gradient(150deg, var(--bg-1), var(--bg-2) 58%, var(--bg-3))
+	color: var(--ink)
+
+.hero
+	max-width: 66rem
+	margin: 0 auto 1.35rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 800
+	letter-spacing: .14em
+	text-transform: uppercase
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.8rem, 4.5vw, 2.8rem)
+	line-height: 1.08
+
+.hero-copy
+	margin: .65rem 0 0
+	max-width: 52ch
+	font-size: clamp(.96rem, 2vw, 1.05rem)
+	line-height: 1.6
+	color: var(--ink-soft)
+
+.content-grid
+	max-width: 66rem
+	margin: 0 auto
+	display: grid
+	grid-template-columns: 1.05fr 1fr
+	gap: 1.15rem
+
+.card
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	border: 1px solid var(--line)
+	border-radius: 1.05rem
+	padding: clamp(1rem, 2.2vw, 1.2rem)
+	box-shadow: 0 20px 36px rgba(77, 53, 32, .13)
+
+.card h2
+	margin: 0 0 .95rem
+	font-size: 1.22rem
+
+.motorcycle-list
+	list-style: none
+	padding: 0
+	margin: 0
+	display: grid
+	gap: .65rem
+
+.motorcycle-list li button
+	width: 100%
+	text-align: left
+	display: grid
+	gap: .28rem
+	padding: .82rem .9rem
+	border-radius: .72rem
+	border: 1px solid var(--line)
+	background: #fffdf8
+	cursor: pointer
+	transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease
+
+.motorcycle-image
+	width: 100%
+	height: 8rem
+	object-fit: cover
+	border-radius: .6rem
+	border: 1px solid var(--line)
+	background: #fff
+
+.motorcycle-list li button:hover
+	transform: translateY(-1px)
+	border-color: color-mix(in srgb, var(--accent) 50%, var(--line))
+
+.motorcycle-list li.active button
+	border-color: var(--accent)
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent)
+
+.motorcycle-name
+	font-weight: 700
+
+.motorcycle-rate
+	font-size: .92rem
+	color: var(--ink-soft)
+
+.helmet-note
+	font-size: .82rem
+	color: var(--accent)
+	font-weight: 600
+
+.field-group
+	display: grid
+	gap: .45rem
+	margin-bottom: .95rem
+
+label
+	font-size: .9rem
+	font-weight: 600
+
+select, input
+	width: 100%
+	padding: .7rem .78rem
+	border-radius: .6rem
+	border: 1px solid var(--line)
+	font-size: .95rem
+	background: #fff
+	color: var(--ink)
+	transition: border-color .2s ease, box-shadow .2s ease
+
+select:focus, input:focus
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
+
+.date-grid
+	display: grid
+	grid-template-columns: 1fr 1fr
+	gap: .7rem
+
+.error
+	margin: 0 0 .8rem
+	padding: .58rem .68rem
+	border: 1px solid #efb7b7
+	border-radius: .55rem
+	background: #fff1f1
+	color: #8f2d2d
+	font-size: .88rem
+	line-height: 1.4
+
+.summary
+	margin-top: .2rem
+	padding: .85rem .9rem
+	border-radius: .75rem
+	border: 1px solid var(--line)
+	background: #fffdf8
+
+.summary p
+	margin: 0 0 .55rem
+	display: flex
+	justify-content: space-between
+	gap: .8rem
+	line-height: 1.35
+
+.summary p span
+	color: var(--ink-soft)
+
+.summary .total
+	padding-top: .5rem
+	border-top: 1px dashed var(--line)
+	font-size: 1.12rem
+	color: var(--accent-deep)
+
+.book-now-btn
+	margin-top: .25rem
+	width: 100%
+	padding: .72rem .9rem
+	border: none
+	border-radius: .64rem
+	font-size: .95rem
+	font-weight: 700
+	background: linear-gradient(135deg, var(--accent), var(--accent-deep))
+	color: #fff
+	cursor: pointer
+	transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease
+
+.book-now-btn:hover
+	transform: translateY(-1px)
+	box-shadow: 0 12px 22px rgba(138, 77, 33, .28)
+
+.book-now-btn:disabled
+	opacity: .55
+	cursor: not-allowed
+	box-shadow: none
+	transform: none
+
+.helmet-footnote
+	margin: .65rem 0 0
+	font-size: .84rem
+	color: var(--accent)
+	justify-content: flex-start !important
+
+.summary.disabled
+	opacity: .64
+
+@media (max-width: 900px)
+	.motorcycle-page
+		padding: 1rem
+
+	.hero
+		margin-bottom: 1rem
+
+	.content-grid
+		grid-template-columns: 1fr
+		gap: .9rem
+
+	.date-grid
+		grid-template-columns: 1fr
+
+	.card
+		padding: .92rem

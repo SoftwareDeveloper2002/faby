@@ -1,0 +1,84 @@
+<main class="tent-page" aria-labelledby="tent-title">
+  <section class="hero">
+    <p class="eyebrow">Monting Balay Rentals</p>
+    <h1 id="tent-title">Camping Tent List</h1>
+    <p class="hero-copy">Daily camping tent rentals from PHP 150 to PHP 450 based on size and adult capacity.</p>
+  </section>
+
+  <section class="card-grid" aria-label="Available tent rentals">
+    @for (tent of tents; track tent.id) {
+      <article class="item-card" [class.popular]="tent.isPopular">
+        <img class="card-image" [src]="tent.imageUrl || '/faby.png'" [alt]="tent.name + ' image'" />
+
+        <div class="top-row">
+          <h2>{{ tent.name }}</h2>
+          @if (tent.isPopular) {
+            <p class="badge">Popular</p>
+          }
+        </div>
+
+        <p class="meta">{{ tent.size }} • {{ tent.capacity }}</p>
+        <p class="description">{{ tent.description }}</p>
+
+        <ul>
+          @for (inclusion of tent.inclusions; track inclusion) {
+            <li>{{ inclusion }}</li>
+          }
+        </ul>
+
+        <div class="bottom-row">
+          <p class="price">PHP {{ tent.ratePerDay }}<span>/day</span></p>
+          <button
+            class="btn"
+            type="button"
+            (click)="selectTent(tent.id)"
+          >
+            {{ selectedTentId === tent.id ? 'Selected' : 'Select Tent' }}
+          </button>
+        </div>
+      </article>
+    }
+  </section>
+
+  <section class="booking-panel" aria-labelledby="booking-title">
+    <h2 id="booking-title">Tent Booking</h2>
+    <p class="booking-copy">Pick your tent and dates to calculate your rental total.</p>
+
+    <div class="booking-form">
+      <label>
+        Tent Unit
+        <select [(ngModel)]="selectedTentId" (ngModelChange)="bookingError = ''">
+          <option value="" disabled>Select a tent</option>
+          @for (tent of tents; track tent.id) {
+            <option [value]="tent.id">{{ tent.name }} - PHP {{ tent.ratePerDay }}/day</option>
+          }
+        </select>
+      </label>
+
+      <div class="date-grid">
+        <label>
+          Booking Date
+          <input type="date" [(ngModel)]="startDate" (ngModelChange)="bookingError = ''" />
+        </label>
+
+        <label>
+          Return Date
+          <input type="date" [(ngModel)]="returnDate" (ngModelChange)="bookingError = ''" />
+        </label>
+      </div>
+    </div>
+
+    @if (bookingError) {
+      <p class="booking-error">{{ bookingError }}</p>
+    }
+
+    <div class="summary" aria-live="polite">
+      <p><span>Tent:</span> {{ selectedTent?.name || 'Not selected' }}</p>
+      <p><span>Rate:</span> PHP {{ selectedTent?.ratePerDay || 0 }} / day</p>
+      <p><span>Total Days:</span> {{ totalDays }}</p>
+      <p class="total"><span>Total Amount:</span> PHP {{ totalAmount }}</p>
+    </div>
+
+    <button class="book-now" type="button" (click)="proceedBooking()">Book Now</button>
+  </section>
+</main>

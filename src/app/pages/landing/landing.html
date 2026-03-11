@@ -1,0 +1,99 @@
+<main class="landing-page" aria-labelledby="landing-title">
+	<div class="landing-page__bg" aria-hidden="true">
+		<span class="shape shape--one"></span>
+		<span class="shape shape--two"></span>
+		<span class="shape shape--three"></span>
+	</div>
+
+	<header class="hero">
+		<p class="eyebrow">Monting Balay</p>
+		<h1 id="landing-title">Inn Booking and Motorcycle Rental</h1>
+		<p class="hero-copy">
+			Stay cozy, ride free. Reserve your room and your motorcycle in one place for an easy trip.
+		</p>
+		<div class="hero-actions">
+			<a class="btn btn-primary" href="#book-now">Book Now</a>
+			<a class="btn btn-secondary" href="/motorcycle-list">View Motorcycles</a>
+			<a class="btn btn-secondary" href="/room-list">View Rooms</a>
+			<a class="btn btn-secondary" href="/tent-list">View Tents</a>
+			<a class="btn btn-secondary" href="/table-chair-list">View Tables & Chairs</a>
+		</div>
+	</header>
+
+	<section id="book-now" class="booking-grid" aria-label="Booking options">
+		<article class="panel panel-inn">
+			<h2>Monting Balay Inn</h2>
+			<p class="panel-copy">Simple, clean rooms with a warm local feel and friendly service.</p>
+			<ul>
+				<li>Private room for 2 to 4 guests</li>
+				<li>Air-conditioned and fan room options</li>
+				<li>Wi-Fi, parking, and breakfast add-on</li>
+			</ul>
+			<div class="rate-row">
+				<p class="rate-label">Starting at</p>
+				<p class="rate">{{ formatCurrency(cheapestInnRate) }}<span>/night</span></p>
+			</div>
+			<a class="btn btn-primary" href="tel:+639123456789">Call to Reserve</a>
+		</article>
+
+		<article id="rentals" class="panel panel-ride">
+			<h2>Motorcycle Rental</h2>
+			<p class="panel-copy">Explore nearby spots with safe and reliable daily rentals.</p>
+			<ul>
+				<li>Automatic and semi-automatic units</li>
+				<li>Helmet and basic safety check included</li>
+				<li>Flexible pickup and return schedule</li>
+			</ul>
+			<div class="rate-row">
+				<p class="rate-label">Starting at</p>
+				<p class="rate">{{ formatCurrency(cheapestMotorcycleRate) }}<span>/day</span></p>
+			</div>
+			<a class="btn btn-primary" href="tel:+639123456789">Reserve a Unit</a>
+		</article>
+	</section>
+
+	<section class="other-products" aria-labelledby="other-products-title">
+		<h2 id="other-products-title">Other Products and Rentals</h2>
+		<div class="other-grid">
+			<article class="product-card">
+				<h3>Camping Tents</h3>
+				<p>Affordable camping tents for solo, couple, and group outdoor trips.</p>
+				<p class="mini-rate">Starts at {{ formatCurrency(cheapestTentRate) }}/day</p>
+				<a class="btn btn-secondary" href="/tent-list">Browse Tent List</a>
+			</article>
+
+			<article class="product-card">
+				<h3>Tables & Chairs</h3>
+				<p>Ready event sets for birthdays, meetings, and private functions.</p>
+				<p class="mini-rate">Starts at {{ formatCurrency(cheapestTableChairRate) }}/day</p>
+				<a class="btn btn-secondary" href="/table-chair-list">Browse Table & Chair List</a>
+			</article>
+		</div>
+	</section>
+
+	<section class="process" aria-labelledby="how-to-book-title">
+		<h2 id="how-to-book-title">How to Book</h2>
+		<div class="steps">
+			<article class="step">
+				<p class="step-number">01</p>
+				<h3>Send your dates</h3>
+				<p>Share your check-in, check-out, and motorcycle rental dates.</p>
+			</article>
+			<article class="step">
+				<p class="step-number">02</p>
+				<h3>Confirm details</h3>
+				<p>We confirm room type, motorcycle unit, and total amount.</p>
+			</article>
+			<article class="step">
+				<p class="step-number">03</p>
+				<h3>Arrive and enjoy</h3>
+				<p>Check in quickly and start your stay and ride right away.</p>
+			</article>
+		</div>
+	</section>
+
+	<footer class="contact">
+		<p class="contact-title">Need help with booking?</p>
+		<p>Call or message us at <a href="tel:+639123456789">+63 912 345 6789</a></p>
+	</footer>
+</main>

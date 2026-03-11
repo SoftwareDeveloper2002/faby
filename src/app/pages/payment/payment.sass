@@ -1,0 +1,117 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.payment-page
+	min-height: 100dvh
+	display: grid
+	place-items: center
+	padding: 1rem
+	background: linear-gradient(145deg, #f4eadb, #e8ceac)
+
+.payment-card
+	width: min(100%, 34rem)
+	padding: 1.1rem
+	border: 1px solid #d7b993
+	border-radius: 1rem
+	background: #fff9f1
+	box-shadow: 0 16px 32px rgba(78, 51, 29, .12)
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 700
+	letter-spacing: .12em
+	text-transform: uppercase
+	color: #8a4e22
+
+h1
+	margin: 0 0 .9rem
+	font-size: clamp(1.4rem, 4vw, 2rem)
+
+.summary
+	border: 1px solid #e1c5a3
+	border-radius: .75rem
+	padding: .85rem
+	background: #fffdf8
+
+.summary p
+	margin: 0 0 .55rem
+	display: flex
+	justify-content: space-between
+	gap: .8rem
+
+.total
+	padding-top: .5rem
+	border-top: 1px dashed #d7b993
+	font-size: 1.06rem
+
+.methods
+	display: grid
+	gap: .55rem
+	margin: .95rem 0
+
+.methods button
+	border: 1px solid #d7b993
+	border-radius: .62rem
+	padding: .62rem .75rem
+	background: #fff
+	cursor: pointer
+	text-align: left
+	font-weight: 600
+
+.methods button.active
+	border-color: #9a5d2d
+	box-shadow: 0 0 0 2px rgba(154, 93, 45, .2)
+	background: #fff8ef
+
+.method-note
+	margin: -.2rem 0 .75rem
+	padding: .6rem .7rem
+	border-radius: .55rem
+	border: 1px solid #e1c5a3
+	background: #fff7ea
+	font-size: .88rem
+	line-height: 1.45
+	color: #6b4f31
+
+.bank-picker
+	margin-bottom: .75rem
+
+.bank-picker label
+	display: block
+	font-size: .88rem
+	font-weight: 700
+	margin-bottom: .4rem
+
+.bank-picker select
+	width: 100%
+	border-radius: .62rem
+	border: 1px solid #d7b993
+	padding: .62rem .75rem
+	font-size: .92rem
+	background: #fff
+
+.error-message
+	margin: 0 0 .75rem
+	padding: .58rem .65rem
+	border-radius: .55rem
+	border: 1px solid #efb7b7
+	background: #fff1f1
+	color: #8f2d2d
+	font-size: .88rem
+
+.btn-primary
+	width: 100%
+	border: none
+	border-radius: .62rem
+	padding: .72rem .85rem
+	font-size: .94rem
+	font-weight: 700
+	background: #9a5d2d
+	color: #fff
+	cursor: pointer
+
+.btn-primary:disabled
+	opacity: .68
+	cursor: not-allowed

@@ -1,0 +1,51 @@
+<main class="my-products-page" aria-labelledby="my-products-title">
+  <section class="hero">
+    <p class="eyebrow">Account</p>
+    <h1 id="my-products-title">My Products and Bookings</h1>
+    @if (userEmail) {
+      <p class="hero-copy">Showing records for {{ userEmail }}</p>
+    }
+  </section>
+
+  @if (isLoading) {
+    <section class="state-card">
+      <p>Loading your records...</p>
+    </section>
+  } @else if (errorMessage) {
+    <section class="state-card error">
+      <p>{{ errorMessage }}</p>
+      <a class="btn" routerLink="/login">Go to Login</a>
+    </section>
+  } @else if (payments.length === 0) {
+    <section class="state-card">
+      <p>No successful payment records yet.</p>
+      <a class="btn" routerLink="/motorcycle-list">Browse Rentals</a>
+    </section>
+  } @else {
+    <section class="records" aria-label="Successful payment records">
+      @for (payment of payments; track payment.id) {
+        <article class="record-card">
+          <div class="top-row">
+            <h2>{{ payment.motorcycleName }}</h2>
+            <p class="status">Paid</p>
+          </div>
+
+          <p class="meta">{{ payment.startDate }} to {{ payment.returnDate }} • {{ payment.totalDays }} day(s)</p>
+
+          <div class="details">
+            <p><span>Amount:</span><strong>PHP {{ payment.totalAmount }}</strong></p>
+            <p><span>Method:</span><strong>{{ payment.paymentMethod | titlecase }}</strong></p>
+            @if (payment.bank) {
+              <p><span>Bank:</span><strong>{{ payment.bank | uppercase }}</strong></p>
+            }
+            <p><span>Saved:</span><strong>{{ payment.createdAt | date:'medium' }}</strong></p>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="print-btn" (click)="printReceipt(payment)">Print Receipt</button>
+          </div>
+        </article>
+      }
+    </section>
+  }
+</main>

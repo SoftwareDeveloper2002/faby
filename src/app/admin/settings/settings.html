@@ -1,0 +1,83 @@
+<app-admin-navbar></app-admin-navbar>
+
+<main class="admin-settings" aria-labelledby="settings-title">
+	<section class="hero">
+		<p class="eyebrow">Admin Settings</p>
+		<h1 id="settings-title">Panel Configuration</h1>
+		<p class="hero-copy">Manage operational preferences for Monting Balay admin workflows.</p>
+	</section>
+
+	<section class="settings-grid">
+		<article class="card">
+			<h2>Booking Rules</h2>
+			<p>Control lead time, cancellation window, and date validation rules for rentals.</p>
+		</article>
+
+		<article class="card">
+			<h2>Payment Preferences</h2>
+			<p>Choose enabled channels and fallback methods for checkout flows.</p>
+		</article>
+
+		<article class="card">
+			<h2>Notification Settings</h2>
+			<p>Configure email notifications for new bookings and payment confirmations.</p>
+		</article>
+	</section>
+
+	<section class="password-panel" aria-labelledby="change-password-title">
+		<article class="card password-card">
+			<h2 id="change-password-title">Change Password</h2>
+			<p class="password-copy">Update your admin account password securely.</p>
+
+			<form class="password-form" (ngSubmit)="changePassword()">
+				<label>
+					Current Password
+					<input
+						type="password"
+						name="currentPassword"
+						[(ngModel)]="currentPassword"
+						autocomplete="current-password"
+						placeholder="Enter current password"
+						required
+					/>
+				</label>
+
+				<label>
+					New Password
+					<input
+						type="password"
+						name="newPassword"
+						[(ngModel)]="newPassword"
+						autocomplete="new-password"
+						placeholder="At least 6 characters"
+						required
+					/>
+				</label>
+
+				<label>
+					Confirm New Password
+					<input
+						type="password"
+						name="confirmNewPassword"
+						[(ngModel)]="confirmNewPassword"
+						autocomplete="new-password"
+						placeholder="Re-enter new password"
+						required
+					/>
+				</label>
+
+				@if (passwordError) {
+					<p class="message error">{{ passwordError }}</p>
+				}
+
+				@if (passwordSuccess) {
+					<p class="message success">{{ passwordSuccess }}</p>
+				}
+
+				<button type="submit" [disabled]="isChangingPassword">
+					{{ isChangingPassword ? 'Changing Password...' : 'Change Password' }}
+				</button>
+			</form>
+		</article>
+	</section>
+</main>

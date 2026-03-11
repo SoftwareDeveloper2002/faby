@@ -1,0 +1,53 @@
+<main class="payment-page" aria-labelledby="payment-title">
+  <section class="payment-card">
+    <p class="eyebrow">Payment</p>
+    <h1 id="payment-title">Complete Your Booking Payment</h1>
+
+    <div class="summary">
+      <p><span>Selected item:</span> <strong>{{ booking.motorcycleName }}</strong></p>
+      <p><span>Rental dates:</span> <strong>{{ booking.startDate }} to {{ booking.returnDate }}</strong></p>
+      <p><span>Total {{ booking.bookingType === 'room' ? 'nights' : 'days' }}:</span> <strong>{{ booking.totalDays }}</strong></p>
+      <p class="total"><span>Amount to pay:</span> <strong>PHP {{ booking.totalAmount }}</strong></p>
+    </div>
+
+    <div class="methods" role="radiogroup" aria-label="Payment method">
+      <button type="button" [class.active]="selectedMethod === 'cash'" (click)="selectedMethod = 'cash'">
+        Cash on Arrival
+      </button>
+      <button type="button" [class.active]="selectedMethod === 'gcash'" (click)="selectedMethod = 'gcash'">
+        GCash
+      </button>
+      <button type="button" [class.active]="selectedMethod === 'bank'" (click)="selectedMethod = 'bank'">
+        Bank Transfer
+      </button>
+    </div>
+
+    @if (selectedMethod === 'gcash') {
+      <p class="method-note">
+        You will be redirected to PayMongo secure checkout to complete payment with GCash.
+      </p>
+    }
+
+    @if (selectedMethod === 'bank') {
+      <div class="bank-picker">
+        <label for="bankOption">Available banks (via PayMongo)</label>
+        <select id="bankOption" name="bankOption" [(ngModel)]="selectedBank">
+          @for (bank of bankOptions; track bank.code) {
+            <option [value]="bank.code">{{ bank.label }}</option>
+          }
+        </select>
+        <p class="method-note">
+          You will be redirected to PayMongo checkout to continue with your selected bank channel.
+        </p>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <p class="error-message">{{ errorMessage }}</p>
+    }
+
+    <button type="button" class="btn-primary" [disabled]="isProcessing" (click)="confirmPayment()">
+      {{ isProcessing ? 'Processing...' : 'Confirm Payment' }}
+    </button>
+  </section>
+</main>

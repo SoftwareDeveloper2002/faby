@@ -1,0 +1,84 @@
+<app-admin-navbar></app-admin-navbar>
+
+<main class="admin-dashboard" aria-labelledby="dashboard-title">
+	<section class="hero">
+		<p class="eyebrow">Admin Analytics</p>
+		<h1 id="dashboard-title">Revenue and Profit Dashboard</h1>
+		<p class="hero-copy">Track product earnings and monthly performance from successful bookings.</p>
+	</section>
+
+	@if (isLoading) {
+		<section class="state-card">
+			<p>Loading analytics...</p>
+		</section>
+	} @else if (errorMessage) {
+		<section class="state-card error">
+			<p>{{ errorMessage }}</p>
+			<a class="btn" href="/admin/login">Back to Admin Login</a>
+		</section>
+	} @else {
+		<section class="kpi-grid" aria-label="Revenue summary">
+			<article class="kpi-card">
+				<p class="label">Total Earnings</p>
+				<p class="value">{{ formatCurrency(totalRevenue) }}</p>
+			</article>
+
+			<article class="kpi-card">
+				<p class="label">Total Profit</p>
+				<p class="value">{{ formatCurrency(totalProfit) }}</p>
+				<p class="hint">Based on recorded successful payments.</p>
+			</article>
+
+			<article class="kpi-card">
+				<p class="label">Total Bookings</p>
+				<p class="value">{{ totalBookings }}</p>
+			</article>
+		</section>
+
+		<section class="analytics-grid">
+			<article class="panel">
+				<div class="panel-head">
+					<h2>Product Earnings</h2>
+				</div>
+
+				@if (productEarnings.length === 0) {
+					<p class="empty">No earnings data yet.</p>
+				} @else {
+					<div class="product-list">
+						@for (product of productEarnings; track product.key) {
+							<div class="product-row">
+								<div>
+									<p class="product-name">{{ product.label }}</p>
+									<p class="product-bookings">{{ product.bookings }} booking(s)</p>
+								</div>
+								<p class="product-amount">{{ formatCurrency(product.amount) }}</p>
+							</div>
+						}
+					</div>
+				}
+			</article>
+
+			<article class="panel">
+				<div class="panel-head">
+					<h2>Monthly Earnings (Last 6 Months)</h2>
+				</div>
+
+				@if (monthlyEarnings.length === 0) {
+					<p class="empty">No monthly data yet.</p>
+				} @else {
+					<div class="chart" aria-label="Monthly earnings graph">
+						@for (month of monthlyEarnings; track month.key) {
+							<div class="bar-item">
+								<p class="amount">{{ formatCurrency(month.amount) }}</p>
+								<div class="bar-track">
+									<div class="bar-fill" [style.height.%]="month.barPercent"></div>
+								</div>
+								<p class="month">{{ month.label }}</p>
+							</div>
+						}
+					</div>
+				}
+			</article>
+		</section>
+	}
+</main>

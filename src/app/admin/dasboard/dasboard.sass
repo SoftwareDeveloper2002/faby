@@ -1,0 +1,190 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.admin-dashboard
+	--bg-1: #f7efe3
+	--bg-2: #ecd4b4
+	--panel: #fff9f1
+	--line: #dac09d
+	--ink: #2f2114
+	--ink-soft: #6f583d
+	--accent: #9a5d2d
+	min-height: 100dvh
+	padding: clamp(1rem, 3vw, 2rem)
+	background: radial-gradient(circle at 85% 10%, #fff2df 0, transparent 35%), linear-gradient(145deg, var(--bg-1), var(--bg-2))
+	color: var(--ink)
+
+.hero
+	max-width: 70rem
+	margin: 0 auto 1rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 800
+	letter-spacing: .14em
+	text-transform: uppercase
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.75rem, 4.8vw, 2.7rem)
+
+.hero-copy
+	margin: .55rem 0 0
+	color: var(--ink-soft)
+
+.state-card
+	max-width: 70rem
+	margin: 0 auto
+	padding: 1rem
+	border: 1px solid var(--line)
+	border-radius: .95rem
+	background: var(--panel)
+
+.state-card.error
+	border-color: #efb7b7
+	background: #fff7f7
+
+.btn
+	display: inline-flex
+	margin-top: .4rem
+	text-decoration: none
+	padding: .56rem .82rem
+	border-radius: .6rem
+	font-size: .88rem
+	font-weight: 700
+	background: linear-gradient(135deg, #a46433, #874a21)
+	color: #fff
+
+.kpi-grid
+	max-width: 70rem
+	margin: 0 auto 1rem
+	display: grid
+	gap: .8rem
+	grid-template-columns: repeat(3, minmax(0, 1fr))
+
+.kpi-card
+	padding: .9rem 1rem
+	border: 1px solid var(--line)
+	border-radius: .9rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 14px 28px rgba(75, 49, 28, .12)
+
+.kpi-card .label
+	margin: 0
+	font-size: .86rem
+	font-weight: 700
+	color: var(--ink-soft)
+
+.kpi-card .value
+	margin: .35rem 0 0
+	font-size: clamp(1.25rem, 3.6vw, 1.9rem)
+	font-weight: 900
+	color: var(--accent)
+
+.kpi-card .hint
+	margin: .35rem 0 0
+	font-size: .78rem
+	color: var(--ink-soft)
+
+.analytics-grid
+	max-width: 70rem
+	margin: 0 auto
+	display: grid
+	gap: .8rem
+	grid-template-columns: 1fr 1.2fr
+
+.panel
+	padding: .95rem 1rem
+	border: 1px solid var(--line)
+	border-radius: .9rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 14px 28px rgba(75, 49, 28, .12)
+
+.panel-head h2
+	margin: 0 0 .75rem
+	font-size: 1.1rem
+
+.empty
+	margin: 0
+	color: var(--ink-soft)
+
+.product-list
+	display: grid
+	gap: .55rem
+
+.product-row
+	display: flex
+	justify-content: space-between
+	align-items: flex-start
+	gap: .8rem
+	padding-bottom: .55rem
+	border-bottom: 1px dashed #e6d2b6
+
+.product-name
+	margin: 0
+	font-weight: 800
+
+.product-bookings
+	margin: .2rem 0 0
+	font-size: .82rem
+	color: var(--ink-soft)
+
+.product-amount
+	margin: 0
+	font-weight: 900
+	color: var(--accent)
+
+.chart
+	height: 18rem
+	display: grid
+	grid-template-columns: repeat(6, minmax(0, 1fr))
+	gap: .55rem
+	align-items: end
+
+.bar-item
+	height: 100%
+	display: grid
+	grid-template-rows: auto 1fr auto
+	gap: .35rem
+
+.amount
+	margin: 0
+	font-size: .75rem
+	font-weight: 700
+	color: var(--ink-soft)
+	text-align: center
+
+.bar-track
+	height: 100%
+	border: 1px solid var(--line)
+	border-radius: .6rem
+	background: #fff7ea
+	position: relative
+	overflow: hidden
+
+.bar-fill
+	position: absolute
+	left: 0
+	bottom: 0
+	width: 100%
+	min-height: 3%
+	background: linear-gradient(180deg, #c8854b, #8d4f26)
+
+.month
+	margin: 0
+	text-align: center
+	font-size: .82rem
+	font-weight: 700
+
+@media (max-width: 980px)
+	.kpi-grid
+		grid-template-columns: 1fr
+
+	.analytics-grid
+		grid-template-columns: 1fr
+
+	.chart
+		height: 15rem

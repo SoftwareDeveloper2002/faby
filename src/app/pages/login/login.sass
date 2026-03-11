@@ -1,0 +1,172 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.login-page
+	--bg-1: #f6efe4
+	--bg-2: #ead9bf
+	--bg-3: #d8bb93
+	--card: #fffaf2
+	--ink: #352716
+	--ink-soft: #685237
+	--line: #d8bea0
+	--accent: #8b5a2b
+	position: relative
+	min-height: 100dvh
+	display: grid
+	place-items: center
+	padding: 1rem
+	overflow: hidden
+	background: radial-gradient(circle at 12% 8%, rgba(255, 255, 255, .9) 0%, transparent 28%), radial-gradient(circle at 85% 90%, rgba(255, 248, 235, .65) 0%, transparent 36%), linear-gradient(140deg, var(--bg-1) 0%, var(--bg-2) 58%, var(--bg-3) 100%)
+
+.login-page__bg
+	position: absolute
+	inset: 0
+	pointer-events: none
+
+.bg-orb
+	position: absolute
+	border-radius: 50%
+	filter: blur(2px)
+	opacity: .6
+
+.bg-orb--one
+	width: 22rem
+	height: 22rem
+	top: -8rem
+	right: -7rem
+	background: radial-gradient(circle at 35% 35%, #fff4df 0%, #d8b486 68%, rgba(216, 180, 134, 0) 100%)
+	animation: driftOne 18s ease-in-out infinite alternate
+
+.bg-orb--two
+	width: 16rem
+	height: 16rem
+	bottom: -5rem
+	left: -4rem
+	background: radial-gradient(circle at 40% 40%, #f8e7ca 0%, #c99e6b 72%, rgba(201, 158, 107, 0) 100%)
+	animation: driftTwo 20s ease-in-out infinite alternate
+
+.bg-orb--three
+	width: 11rem
+	height: 11rem
+	top: 52%
+	right: 16%
+	background: radial-gradient(circle at 50% 45%, #fff5e4 0%, #ddb98a 75%, rgba(221, 185, 138, 0) 100%)
+	opacity: .45
+	animation: driftThree 16s ease-in-out infinite alternate
+
+.bg-grid
+	position: absolute
+	inset: 0
+	background-image: linear-gradient(rgba(104, 82, 55, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(104, 82, 55, .08) 1px, transparent 1px)
+	background-size: 34px 34px
+	opacity: .16
+
+.bg-noise
+	position: absolute
+	inset: 0
+	background-image: radial-gradient(rgba(255, 255, 255, .22) 1px, transparent 1px)
+	background-size: 3px 3px
+	opacity: .2
+
+.login-card
+	position: relative
+	z-index: 1
+	width: min(100%, 30rem)
+	padding: clamp(1.25rem, 3vw, 2rem)
+	border: 1px solid var(--line)
+	border-radius: 1rem
+	background: color-mix(in srgb, var(--card) 88%, #ffffff)
+	backdrop-filter: blur(4px)
+	box-shadow: 0 24px 45px rgba(52, 39, 22, .2)
+
+.eyebrow
+	margin: 0 0 .4rem
+	font-size: .78rem
+	letter-spacing: .14em
+	text-transform: uppercase
+	font-weight: 700
+	color: var(--accent)
+
+h1
+	margin: 0 0 .6rem
+	color: var(--ink)
+	font-size: clamp(1.6rem, 4.8vw, 2.3rem)
+	line-height: 1.15
+
+.intro
+	margin: 0 0 1.1rem
+	color: var(--ink-soft)
+	line-height: 1.45
+
+.actions
+	display: block
+	margin-top: .2rem
+
+button
+	border: none
+	border-radius: .6rem
+	padding: .72rem .9rem
+	font-size: .92rem
+	font-weight: 700
+	cursor: pointer
+	background: var(--accent)
+	color: #fff
+	width: 100%
+
+button:disabled
+	opacity: .65
+	cursor: not-allowed
+
+.google-btn
+	background: linear-gradient(135deg, #9b5f2e, #7f4a21)
+	box-shadow: 0 12px 20px rgba(127, 74, 33, .25)
+
+.status
+	margin: .95rem 0 0
+	padding: .62rem .75rem
+	border-radius: .55rem
+	font-size: .9rem
+
+.status.success
+	background: #ebf9ee
+	border: 1px solid #b5e4bf
+	color: #256a35
+
+.status.error
+	background: #fff0f0
+	border: 1px solid #efc4c4
+	color: #8f2d2d
+
+@media (max-width: 640px)
+	.bg-orb--one
+		width: 16rem
+		height: 16rem
+
+	.bg-orb--two
+		width: 12rem
+		height: 12rem
+
+	.bg-orb--three
+		right: 4%
+
+	.bg-grid
+		opacity: .1
+
+@keyframes driftOne
+	from
+		transform: translate3d(0, 0, 0) scale(1)
+	to
+		transform: translate3d(-18px, 14px, 0) scale(1.07)
+
+@keyframes driftTwo
+	from
+		transform: translate3d(0, 0, 0) scale(1)
+	to
+		transform: translate3d(12px, -16px, 0) scale(1.06)
+
+@keyframes driftThree
+	from
+		transform: translate3d(0, 0, 0)
+	to
+		transform: translate3d(10px, -10px, 0)

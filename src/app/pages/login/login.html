@@ -1,0 +1,29 @@
+<main class="login-page" aria-labelledby="login-title">
+	<div class="login-page__bg" aria-hidden="true">
+		<span class="bg-orb bg-orb--one"></span>
+		<span class="bg-orb bg-orb--two"></span>
+		<span class="bg-orb bg-orb--three"></span>
+		<span class="bg-grid"></span>
+		<span class="bg-noise"></span>
+	</div>
+
+	<section class="login-card">
+		<p class="eyebrow">Faby Access</p>
+		<h1 id="login-title">Login With Google</h1>
+		<p class="intro">Sign in with your Google account to continue your motorcycle booking.</p>
+
+		<div class="actions">
+			<button class="google-btn" type="button" (click)="signInWithGoogle()" [disabled]="isSigningIn">
+				{{ isSigningIn ? 'Signing in...' : 'Continue with Google' }}
+			</button>
+		</div>
+
+		@if (successMessage) {
+			<p class="status success">{{ successMessage }}</p>
+		}
+
+		@if (errorMessage) {
+			<p class="status error">{{ errorMessage }}</p>
+		}
+	</section>
+</main>

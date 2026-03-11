@@ -1,0 +1,128 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.admin-settings
+	--bg-1: #f7efe3
+	--bg-2: #ecd5b5
+	--panel: #fff9f1
+	--line: #d9bd99
+	--ink: #2f2114
+	--ink-soft: #6c563a
+	--accent: #985b2c
+	min-height: 100dvh
+	padding: 1rem clamp(1rem, 3vw, 2rem) 1.4rem
+	background: radial-gradient(circle at 85% 10%, #fff2df 0, transparent 35%), linear-gradient(145deg, var(--bg-1), var(--bg-2))
+	color: var(--ink)
+
+.hero,
+.settings-grid
+	max-width: 72rem
+	margin: 0 auto
+
+.hero
+	margin-top: .9rem
+	margin-bottom: .9rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 800
+	letter-spacing: .14em
+	text-transform: uppercase
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.7rem, 4.6vw, 2.5rem)
+
+.hero-copy
+	margin: .55rem 0 0
+	color: var(--ink-soft)
+
+.settings-grid
+	display: grid
+	gap: .75rem
+	grid-template-columns: repeat(3, minmax(0, 1fr))
+
+.password-panel
+	max-width: 72rem
+	margin: .85rem auto 0
+
+.card
+	padding: .95rem
+	border: 1px solid var(--line)
+	border-radius: .9rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 14px 28px rgba(75, 49, 28, .12)
+
+.card h2
+	margin: 0 0 .45rem
+	font-size: 1.08rem
+
+.card p
+	margin: 0
+	color: var(--ink-soft)
+	line-height: 1.55
+
+.password-card h2
+	margin: 0
+
+.password-copy
+	margin: .4rem 0 .8rem !important
+
+.password-form
+	display: grid
+	gap: .75rem
+
+.password-form label
+	display: grid
+	gap: .35rem
+	font-size: .88rem
+	font-weight: 700
+
+.password-form input
+	width: 100%
+	padding: .62rem .7rem
+	border: 1px solid var(--line)
+	border-radius: .58rem
+	font-size: .92rem
+	background: #fff
+	color: var(--ink)
+
+.password-form input:focus
+	outline: 2px solid #e7c29a
+	outline-offset: 1px
+
+.message
+	margin: 0
+	padding: .52rem .62rem
+	border-radius: .5rem
+	font-size: .84rem
+	font-weight: 700
+
+.message.error
+	background: #fde3e3
+	color: #892020
+
+.message.success
+	background: #e5f6e9
+	color: #1f6d31
+
+.password-form button
+	border: 0
+	border-radius: .62rem
+	padding: .72rem .9rem
+	font-size: .92rem
+	font-weight: 800
+	background: linear-gradient(135deg, #a56534, #874a21)
+	color: #fff
+	cursor: pointer
+
+.password-form button[disabled]
+	opacity: .7
+	cursor: not-allowed
+
+@media (max-width: 980px)
+	.settings-grid
+		grid-template-columns: 1fr

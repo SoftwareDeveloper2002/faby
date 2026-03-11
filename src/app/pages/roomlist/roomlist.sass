@@ -1,0 +1,247 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.room-page
+	--bg-1: #f9efe2
+	--bg-2: #f0d9bb
+	--panel: #fff9f1
+	--line: #dbbe98
+	--ink: #2f2114
+	--ink-soft: #6f583d
+	--accent: #9a5a2b
+	min-height: 100dvh
+	padding: clamp(1rem, 3vw, 2rem)
+	background: radial-gradient(circle at 12% 8%, rgba(255, 255, 255, .85) 0%, transparent 30%), linear-gradient(145deg, var(--bg-1), var(--bg-2))
+	color: var(--ink)
+
+.hero
+	max-width: 68rem
+	margin: 0 auto 1rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	letter-spacing: .14em
+	text-transform: uppercase
+	font-weight: 800
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.8rem, 4.8vw, 2.8rem)
+
+.hero-copy
+	margin: .6rem 0 0
+	max-width: 50ch
+	line-height: 1.55
+	color: var(--ink-soft)
+
+.room-grid
+	max-width: 68rem
+	margin: 0 auto
+	display: grid
+	gap: 1rem
+	grid-template-columns: repeat(2, minmax(0, 1fr))
+
+.room-card
+	display: grid
+	grid-template-columns: 9rem 1fr
+	gap: .95rem
+	padding: .95rem
+	border: 1px solid var(--line)
+	border-radius: 1rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 18px 32px rgba(79, 52, 30, .12)
+
+.room-card.popular
+	border-color: #c79563
+	box-shadow: 0 20px 36px rgba(106, 66, 30, .18)
+
+.room-visual
+	border-radius: .85rem
+	display: grid
+	place-items: center
+	font-weight: 800
+	letter-spacing: .06em
+	color: #6b3d1b
+	background: linear-gradient(145deg, #f4e3cc, #e4bf8f)
+	overflow: hidden
+
+.room-image
+	width: 100%
+	height: 100%
+	object-fit: cover
+	display: block
+
+.room-content
+	display: grid
+	gap: .45rem
+
+.room-top-row
+	display: flex
+	justify-content: space-between
+	gap: .5rem
+	align-items: center
+
+.room-top-row h2
+	margin: 0
+	font-size: 1.2rem
+
+.badge
+	margin: 0
+	padding: .26rem .5rem
+	font-size: .72rem
+	font-weight: 800
+	text-transform: uppercase
+	letter-spacing: .08em
+	color: #7a431d
+	background: #f4dfc2
+	border-radius: 999px
+
+.meta
+	margin: 0
+	font-size: .9rem
+	color: var(--ink-soft)
+
+.description
+	margin: 0
+	line-height: 1.5
+	color: #4e3a26
+
+.amenities
+	margin: .2rem 0
+	padding-left: 1rem
+
+.amenities li
+	margin-bottom: .2rem
+	font-size: .88rem
+	color: var(--ink-soft)
+
+.bottom-row
+	display: flex
+	align-items: center
+	justify-content: space-between
+	gap: .75rem
+	margin-top: .2rem
+
+.price
+	margin: 0
+	font-size: 1.25rem
+	font-weight: 800
+	color: var(--accent)
+
+.price span
+	font-size: .86rem
+	font-weight: 600
+	color: var(--ink-soft)
+
+.btn
+	border: none
+	cursor: pointer
+	border-radius: .6rem
+	padding: .58rem .82rem
+	text-decoration: none
+	font-size: .88rem
+	font-weight: 700
+	background: linear-gradient(135deg, #a46433, #874a21)
+	color: #fff
+
+.booking-panel
+	max-width: 68rem
+	margin: 1rem auto 0
+
+.booking-card
+	padding: 1rem
+	border: 1px solid var(--line)
+	border-radius: 1rem
+	background: color-mix(in srgb, var(--panel) 90%, white)
+	box-shadow: 0 18px 32px rgba(79, 52, 30, .12)
+
+.booking-card h2
+	margin: 0 0 .9rem
+
+.field-group
+	display: grid
+	gap: .42rem
+	margin-bottom: .8rem
+
+label
+	font-size: .88rem
+	font-weight: 700
+
+select, input
+	width: 100%
+	padding: .65rem .75rem
+	border-radius: .58rem
+	border: 1px solid var(--line)
+	font-size: .94rem
+	background: #fff
+	color: var(--ink)
+
+.date-grid
+	display: grid
+	grid-template-columns: 1fr 1fr
+	gap: .7rem
+
+.error
+	margin: 0 0 .7rem
+	padding: .55rem .65rem
+	border: 1px solid #efb7b7
+	border-radius: .55rem
+	background: #fff1f1
+	color: #8f2d2d
+	font-size: .88rem
+
+.summary
+	padding: .8rem
+	border-radius: .72rem
+	border: 1px solid var(--line)
+	background: #fffdf8
+
+.summary p
+	margin: 0 0 .5rem
+	display: flex
+	justify-content: space-between
+	gap: .75rem
+
+.summary p span
+	color: var(--ink-soft)
+
+.summary .total
+	padding-top: .45rem
+	border-top: 1px dashed var(--line)
+	font-size: 1.08rem
+
+.summary.disabled
+	opacity: .64
+
+.book-now-btn
+	margin-top: .25rem
+	width: 100%
+	padding: .72rem .9rem
+	border: none
+	border-radius: .62rem
+	font-size: .94rem
+	font-weight: 700
+	background: linear-gradient(135deg, #a46433, #874a21)
+	color: #fff
+	cursor: pointer
+
+.book-now-btn:disabled
+	opacity: .55
+	cursor: not-allowed
+
+@media (max-width: 960px)
+	.room-grid
+		grid-template-columns: 1fr
+
+@media (max-width: 620px)
+	.room-card
+		grid-template-columns: 1fr
+
+	.room-visual
+		min-height: 6rem
+
+	.date-grid
+		grid-template-columns: 1fr

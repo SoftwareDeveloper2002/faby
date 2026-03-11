@@ -10,6 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA",
   authDomain: "faby-be0b9.firebaseapp.com",
   projectId: "faby-be0b9",
+  databaseURL: "https://faby-be0b9-default-rtdb.asia-southeast1.firebasedatabase.app",
   storageBucket: "faby-be0b9.firebasestorage.app",
   messagingSenderId: "71671731623",
   appId: "1:71671731623:web:6df23b47797e12b9aad282",

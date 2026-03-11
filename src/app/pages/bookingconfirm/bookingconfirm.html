@@ -1,0 +1,23 @@
+<main class="confirm-page" aria-labelledby="confirm-title">
+  <section class="confirm-card">
+    <p class="eyebrow">Booking Confirmation</p>
+    <h1 id="confirm-title">Review Your Booking</h1>
+
+    <div class="summary">
+      <p><span>Selected item:</span> <strong>{{ booking.motorcycleName }}</strong></p>
+      <p><span>Rate:</span> <strong>PHP {{ booking.dailyRate }} / {{ booking.bookingType === 'room' ? 'night' : 'day' }}</strong></p>
+      <p><span>Start date:</span> <strong>{{ booking.startDate }}</strong></p>
+      <p><span>Return date:</span> <strong>{{ booking.returnDate }}</strong></p>
+      <p><span>Total {{ booking.bookingType === 'room' ? 'nights' : 'days' }}:</span> <strong>{{ booking.totalDays }}</strong></p>
+      <p class="total"><span>Total amount:</span> <strong>PHP {{ booking.totalAmount }}</strong></p>
+      @if (booking.bookingType === 'motorcycle') {
+        <p class="note">Includes 2 helmets</p>
+      }
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" [routerLink]="booking.returnPath">Back</button>
+      <button type="button" class="btn-primary" (click)="proceedToPayment()">Proceed to Payment</button>
+    </div>
+  </section>
+</main>

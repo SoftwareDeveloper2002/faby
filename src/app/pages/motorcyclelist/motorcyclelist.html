@@ -1,0 +1,80 @@
+<main class="motorcycle-page" aria-labelledby="motorcycle-title">
+	<section class="hero">
+		<p class="eyebrow">Faby Rental</p>
+		<h1 id="motorcycle-title">Motorcycle List and Booking</h1>
+		<p class="hero-copy">All rentals include 2 helmets for safety and convenience.</p>
+	</section>
+
+	<section class="content-grid" aria-label="Motorcycle rental options">
+		@if (motorcycles.length === 0) {
+			<article class="card list-card">
+				<h2>Available Motorcycles</h2>
+				<p>No motorcycle rentals available yet.</p>
+			</article>
+		} @else {
+		<article class="card list-card">
+			<h2>Available Motorcycles</h2>
+			<ul class="motorcycle-list">
+				@for (motorcycle of motorcycles; track motorcycle.id) {
+					<li [class.active]="selectedMotorcycleId === motorcycle.id">
+						<button type="button" (click)="selectedMotorcycleId = motorcycle.id">
+							<img class="motorcycle-image" [src]="motorcycle.imageUrl || '/faby.png'" [alt]="motorcycle.name + ' image'">
+							<span class="motorcycle-name">{{ motorcycle.name }}</span>
+							<span class="motorcycle-rate">PHP {{ motorcycle.dailyRate }} / day</span>
+							@if (motorcycle.helmetIncluded) {
+								<span class="helmet-note">Includes 2 helmets</span>
+							} @else {
+								<span class="helmet-note">Helmet availability depends on unit</span>
+							}
+						</button>
+					</li>
+				}
+			</ul>
+		</article>
+
+		<article class="card booking-card">
+			<h2>Book Your Rental</h2>
+
+			<div class="field-group">
+				<label for="motorcycle">Motorcycle</label>
+				<select id="motorcycle" name="motorcycle" [(ngModel)]="selectedMotorcycleId">
+					@for (motorcycle of motorcycles; track motorcycle.id) {
+						<option [value]="motorcycle.id">{{ motorcycle.name }} - PHP {{ motorcycle.dailyRate }}/day</option>
+					}
+				</select>
+			</div>
+
+			<div class="date-grid">
+				<div class="field-group">
+					<label for="startDate">Starting booking date</label>
+					<input id="startDate" name="startDate" type="date" [(ngModel)]="bookingStartDate">
+				</div>
+
+				<div class="field-group">
+					<label for="returnDate">Returning date</label>
+					<input id="returnDate" name="returnDate" type="date" [(ngModel)]="bookingReturnDate">
+				</div>
+			</div>
+
+			@if (hasDateError) {
+				<p class="error">Returning date must be the same or later than the starting booking date.</p>
+			}
+
+			<div class="summary" [class.disabled]="totalDays === 0 || hasDateError">
+				<p><span>Selected unit:</span> <strong>{{ selectedMotorcycle.name }}</strong></p>
+				<p><span>Rate:</span> <strong>PHP {{ selectedMotorcycle.dailyRate }} / day</strong></p>
+				<p><span>Total days:</span> <strong>{{ totalDays }}</strong></p>
+				<p class="total"><span>Total amount:</span> <strong>PHP {{ totalAmount }}</strong></p>
+				<button class="book-now-btn" type="button" (click)="proceedBooking()" [disabled]="!canProceedBooking">
+					Book Now
+				</button>
+				@if (selectedMotorcycle.helmetIncluded) {
+					<p class="helmet-footnote">2 helmets are already included in this rental.</p>
+				} @else {
+					<p class="helmet-footnote">Helmet inclusions may vary by motorcycle unit.</p>
+				}
+			</div>
+		</article>
+		}
+	</section>
+</main>

@@ -1,0 +1,81 @@
+<main class="room-page" aria-labelledby="room-title">
+	<section class="hero">
+		<p class="eyebrow">Monting Balay Inn</p>
+		<h1 id="room-title">Room List</h1>
+		<p class="hero-copy">Choose the room that fits your stay. All rooms are clean, secure, and guest-ready.</p>
+	</section>
+
+	<section class="room-grid" aria-label="Available rooms">
+		@for (room of rooms; track room.id) {
+			<article class="room-card" [class.popular]="room.isPopular">
+				<div class="room-visual">
+					<img class="room-image" [src]="room.imageUrl || '/faby.png'" [alt]="room.name + ' image'" />
+				</div>
+
+				<div class="room-content">
+					<div class="room-top-row">
+						<h2>{{ room.name }}</h2>
+						@if (room.isPopular) {
+							<p class="badge">Most Booked</p>
+						}
+					</div>
+
+					<p class="meta">{{ room.capacity }} • {{ room.bedType }}</p>
+					<p class="description">{{ room.description }}</p>
+
+					<ul class="amenities">
+						@for (amenity of room.amenities; track amenity) {
+							<li>{{ amenity }}</li>
+						}
+					</ul>
+
+					<div class="bottom-row">
+						<p class="price">PHP {{ room.pricePerNight }}<span>/night</span></p>
+						<button type="button" class="btn" (click)="selectedRoomId = room.id">Select</button>
+					</div>
+				</div>
+			</article>
+		}
+	</section>
+
+	<section class="booking-panel" aria-label="Room booking calculator">
+		<article class="booking-card">
+			<h2>Book Your Room</h2>
+
+			<div class="field-group">
+				<label for="roomSelect">Room</label>
+				<select id="roomSelect" name="roomSelect" [(ngModel)]="selectedRoomId">
+					@for (room of rooms; track room.id) {
+						<option [value]="room.id">{{ room.name }} - PHP {{ room.pricePerNight }}/night</option>
+					}
+				</select>
+			</div>
+
+			<div class="date-grid">
+				<div class="field-group">
+					<label for="checkInDate">Check-in date</label>
+					<input id="checkInDate" name="checkInDate" type="date" [(ngModel)]="bookingStartDate">
+				</div>
+
+				<div class="field-group">
+					<label for="checkOutDate">Check-out date</label>
+					<input id="checkOutDate" name="checkOutDate" type="date" [(ngModel)]="bookingReturnDate">
+				</div>
+			</div>
+
+			@if (hasDateError) {
+				<p class="error">Check-out date must be the same or later than check-in date.</p>
+			}
+
+			<div class="summary" [class.disabled]="totalDays === 0 || hasDateError">
+				<p><span>Selected room:</span> <strong>{{ selectedRoom.name }}</strong></p>
+				<p><span>Rate:</span> <strong>PHP {{ selectedRoom.pricePerNight }} / night</strong></p>
+				<p><span>Total nights:</span> <strong>{{ totalDays }}</strong></p>
+				<p class="total"><span>Total amount:</span> <strong>PHP {{ totalAmount }}</strong></p>
+				<button class="book-now-btn" type="button" (click)="proceedBooking()" [disabled]="!canProceedBooking">
+					Book Now
+				</button>
+			</div>
+		</article>
+	</section>
+</main>

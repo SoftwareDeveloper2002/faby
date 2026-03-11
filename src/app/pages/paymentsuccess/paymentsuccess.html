@@ -1,0 +1,26 @@
+<main class="result-page success" aria-labelledby="success-title">
+  <section class="result-card">
+    <p class="eyebrow">Payment Status</p>
+    <h1 id="success-title">Payment Successful</h1>
+    <p class="message">
+      Your booking payment was completed successfully. Thank you for booking with Monting Balay.
+    </p>
+
+    @if (isSaving) {
+      <p class="status saving">Saving payment record...</p>
+    }
+
+    @if (!isSaving && saveSuccess) {
+      <p class="status success">{{ saveSuccess }}</p>
+    }
+
+    @if (!isSaving && saveError) {
+      <p class="status error">{{ saveError }}</p>
+    }
+
+    <div class="actions">
+      <a class="btn btn-primary" routerLink="/">Back to Home</a>
+      <a class="btn btn-secondary" routerLink="/motorcycle-list">Book Another Ride</a>
+    </div>
+  </section>
+</main>

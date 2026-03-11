@@ -1,0 +1,19 @@
+<nav class="admin-navbar" aria-label="Admin main navigation">
+	<div class="brand">
+		<p class="eyebrow">Monting Balay</p>
+		<p class="title">Admin Panel</p>
+	</div>
+
+	<ul class="links">
+		@for (item of navItems; track item.path) {
+			<li>
+				<a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+			</li>
+		}
+	</ul>
+
+	<div class="account">
+		<p class="admin-name">{{ adminName }}</p>
+		<button type="button" (click)="logout()">Logout</button>
+	</div>
+</nav>
