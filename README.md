@@ -10,7 +10,7 @@ To start a local development server, run:
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `https://faby-be0b9.web.app/`. The application will automatically reload whenever you modify any of the source files.
+Once the server is running, open your browser and navigate to `https://faby-beta.vercel.app/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding
 

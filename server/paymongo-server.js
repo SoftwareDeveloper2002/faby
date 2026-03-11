@@ -7,7 +7,7 @@ const app = express();
 const port = Number(process.env.PORT || 3100);
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://faby-be0b9.web.app', 'http://localhost:4201'];
+  const allowedOrigins = ['https://faby-beta.vercel.app', 'http://localhost:4201'];
   const requestOrigin = req.headers.origin;
 
   if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
@@ -61,7 +61,7 @@ app.post('/api/paymongo/checkout-session', async (req, res) => {
     }
 
     const amountInCentavos = Math.round(amountNumber * 100);
-    const sourceBase = process.env.APP_BASE_URL || 'https://faby-be0b9.web.app';
+    const sourceBase = process.env.APP_BASE_URL || 'https://faby-beta.vercel.app';
     const checkoutQuery = new URLSearchParams({
       motorcycleName: String(metadata?.motorcycleName || ''),
       totalDays: String(metadata?.totalDays || ''),

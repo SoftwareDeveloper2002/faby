@@ -7,7 +7,7 @@
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "npm: start",
-      "url": "https://faby-be0b9.web.app/"
+      "url": "https://faby-beta.vercel.app/"
     },
     {
       "name": "ng test",
