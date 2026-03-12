@@ -3,7 +3,7 @@
   "outputDirectory": "dist/faby-front/browser",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

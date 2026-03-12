@@ -13,7 +13,7 @@ type PaymentDetails = {
   returnPath: string;
 };
 
-const DEFAULT_PAYMONGO_API_BASE = 'http://54.179.214.202';
+const DEFAULT_PAYMONGO_API_BASE = 'https://faby.soltryxsolutions.com';
 
 @Component({
   selector: 'app-payment',
@@ -125,7 +125,7 @@ export class Payment {
     }
 
     if (!response) {
-      throw new Error('Unable to reach payment API. Ensure your backend is running and reachable at http://54.179.214.202 or set localStorage.paymongoApiBaseUrl to your backend URL.');
+      throw new Error('Unable to reach payment API. Ensure your backend is running and reachable at https://faby.soltryxsolutions.com or set localStorage.paymongoApiBaseUrl to your backend URL.');
     }
 
     if (!response.ok) {
