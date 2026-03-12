@@ -31,7 +31,7 @@
 
 					<div class="bottom-row">
 						<p class="price">PHP {{ room.pricePerNight }}<span>/night</span></p>
-						<button type="button" class="btn" (click)="selectedRoomId = room.id">Select</button>
+						<button type="button" class="btn" (click)="selectedRoomId = room.id; onSelectedRoomChange()">Select</button>
 					</div>
 				</div>
 			</article>
@@ -44,30 +44,78 @@
 
 			<div class="field-group">
 				<label for="roomSelect">Room</label>
-				<select id="roomSelect" name="roomSelect" [(ngModel)]="selectedRoomId">
+				<select id="roomSelect" name="roomSelect" [(ngModel)]="selectedRoomId" (ngModelChange)="onSelectedRoomChange()">
 					@for (room of rooms; track room.id) {
 						<option [value]="room.id">{{ room.name }} - PHP {{ room.pricePerNight }}/night</option>
 					}
 				</select>
 			</div>
 
-			<div class="date-grid">
-				<div class="field-group">
-					<label for="checkInDate">Check-in date</label>
-					<input id="checkInDate" name="checkInDate" type="date" [(ngModel)]="bookingStartDate">
-				</div>
-
-				<div class="field-group">
-					<label for="checkOutDate">Check-out date</label>
-					<input id="checkOutDate" name="checkOutDate" type="date" [(ngModel)]="bookingReturnDate">
-				</div>
+			<div class="selected-range" aria-live="polite">
+				<p class="selected-range-copy">{{ selectedDateRangeLabel }}</p>
+				@if (bookingStartDate || bookingReturnDate) {
+					<button class="clear-selection-btn" type="button" (click)="resetCalendarSelection()">Clear dates</button>
+				}
 			</div>
 
 			@if (hasDateError) {
 				<p class="error">Check-out date must be the same or later than check-in date.</p>
 			}
 
-			<div class="summary" [class.disabled]="totalDays === 0 || hasDateError">
+			@if (calendarSelectionError) {
+				<p class="error">{{ calendarSelectionError }}</p>
+			}
+
+			@if (hasAvailabilityConflict) {
+				<p class="error">Selected dates overlap with an existing booking for this room. Please choose a different date range.</p>
+			}
+
+			<div class="calendar-card" aria-label="Room booking availability calendar">
+				<div class="calendar-head">
+					<h3>Availability Calendar</h3>
+					<p>Booked dates are blocked for <strong>{{ selectedRoom.name }}</strong>.</p>
+				</div>
+
+				@if (isAvailabilityLoading) {
+					<p class="calendar-hint">Loading booked dates...</p>
+				} @else {
+					<div class="calendar-legend" role="list" aria-label="Calendar legend">
+						<span role="listitem"><i class="dot booked"></i> Booked</span>
+						<span role="listitem"><i class="dot selected"></i> Your selection</span>
+						<span role="listitem"><i class="dot available"></i> Available</span>
+					</div>
+
+					<div class="calendar-months">
+						@for (month of calendarMonths; track month.key) {
+							<div class="calendar-month">
+								<h4>{{ month.label }}</h4>
+								<div class="weekdays">
+									@for (label of weekdayLabels; track label) {
+										<span>{{ label }}</span>
+									}
+								</div>
+								<div class="days-grid">
+									@for (day of month.days; track day.iso) {
+										<button class="day"
+											type="button"
+											(click)="onCalendarDayClick(day)"
+											[disabled]="!day.isSelectable"
+											[class.current]="day.isCurrentMonth"
+											[class.booked]="day.isBooked"
+											[class.past]="day.isPast"
+											[class.in-range]="day.isInSelectionRange"
+											[class.selection-edge]="day.isSelectionStart || day.isSelectionEnd">
+											{{ day.day }}
+										</button>
+									}
+								</div>
+							</div>
+						}
+					</div>
+				}
+			</div>
+
+			<div class="summary" [class.disabled]="totalDays === 0 || hasDateError || hasAvailabilityConflict">
 				<p><span>Selected room:</span> <strong>{{ selectedRoom.name }}</strong></p>
 				<p><span>Rate:</span> <strong>PHP {{ selectedRoom.pricePerNight }} / night</strong></p>
 				<p><span>Total nights:</span> <strong>{{ totalDays }}</strong></p>
