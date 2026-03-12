@@ -61,7 +61,12 @@ app.post('/api/paymongo/checkout-session', async (req, res) => {
     }
 
     const amountInCentavos = Math.round(amountNumber * 100);
-    const sourceBase = process.env.APP_BASE_URL || 'https://faby-beta.vercel.app';
+    const forwardedProto = (req.headers['x-forwarded-proto'] || '').toString().split(',')[0].trim();
+    const protocol = forwardedProto || req.protocol || 'https';
+    const forwardedHost = (req.headers['x-forwarded-host'] || '').toString().split(',')[0].trim();
+    const host = forwardedHost || req.headers.host;
+    const requestOrigin = (req.headers.origin || '').toString().trim();
+    const sourceBase = requestOrigin || process.env.APP_BASE_URL || `${protocol}://${host}`;
     const checkoutQuery = new URLSearchParams({
       motorcycleName: String(metadata?.motorcycleName || ''),
       totalDays: String(metadata?.totalDays || ''),

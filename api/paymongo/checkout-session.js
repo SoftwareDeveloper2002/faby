@@ -36,9 +36,12 @@ module.exports = async (req, res) => {
       return res.status(400).json({ message: 'Unsupported payment method for PayMongo checkout.' });
     }
 
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers.host;
-    const sourceBase = process.env.APP_BASE_URL || `${protocol}://${host}`;
+    const forwardedProto = (req.headers['x-forwarded-proto'] || '').toString().split(',')[0].trim();
+    const protocol = forwardedProto || 'https';
+    const forwardedHost = (req.headers['x-forwarded-host'] || '').toString().split(',')[0].trim();
+    const host = forwardedHost || req.headers.host;
+    const requestOrigin = (req.headers.origin || '').toString().trim();
+    const sourceBase = requestOrigin || process.env.APP_BASE_URL || `${protocol}://${host}`;
 
     const amountInCentavos = Math.round(amountNumber * 100);
     const checkoutQuery = new URLSearchParams({
