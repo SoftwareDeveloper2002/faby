@@ -1,0 +1,27 @@
+@if (isOpen) {
+  <div class="legal-modal-backdrop" (click)="onClose()"></div>
+  <section class="legal-modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="legal-modal__header">
+      <h2>{{ title }}</h2>
+      <button type="button" class="icon-close" (click)="onClose()" aria-label="Close modal">x</button>
+    </header>
+
+    <div class="legal-modal__body">
+      @for (section of sections; track section.heading || $index) {
+        <article class="legal-section">
+          @if (section.heading) {
+            <h3>{{ section.heading }}</h3>
+          }
+
+          @for (paragraph of section.paragraphs; track paragraph) {
+            <p>{{ paragraph }}</p>
+          }
+        </article>
+      }
+    </div>
+
+    <footer class="legal-modal__footer">
+      <button type="button" class="btn-close" (click)="onClose()">{{ closeLabel }}</button>
+    </footer>
+  </section>
+}

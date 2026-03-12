@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LegalModalComponent, LegalModalSection } from '../../components/legal-modal/legal-modal';
 
 type PaymentDetails = {
   motorcycleId: string;
@@ -18,7 +19,8 @@ const DEFAULT_PAYMONGO_API_BASE = 'https://faby.soltryxsolutions.com';
 
 @Component({
   selector: 'app-payment',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, LegalModalComponent],
   templateUrl: './payment.html',
   styleUrl: './payment.sass',
 })
@@ -28,6 +30,9 @@ export class Payment {
   selectedBank = 'bpi';
   isProcessing = false;
   errorMessage = '';
+  hasAcceptedPolicies = false;
+  isTermsModalOpen = false;
+  isPrivacyModalOpen = false;
 
   readonly bankOptions = [
     { code: 'bpi', label: 'BPI' },
@@ -35,6 +40,40 @@ export class Payment {
     { code: 'bdo', label: 'BDO' },
     { code: 'landbank', label: 'Landbank' },
     { code: 'metrobank', label: 'Metrobank' },
+  ];
+
+  readonly termsSections: LegalModalSection[] = [
+    {
+      heading: 'Payment Authorization',
+      paragraphs: [
+        'By continuing, you confirm that the payment method selected belongs to you or is authorized for this booking.',
+        'All payment attempts must use valid account details and follow provider security checks.',
+      ],
+    },
+    {
+      heading: 'Booking and Charge Terms',
+      paragraphs: [
+        'Confirmed payments are tied to your booking details, including selected item, dates, and total amount.',
+        'Cancellations, adjustments, and refunds are processed under Monting Balay policies and payment provider rules.',
+      ],
+    },
+  ];
+
+  readonly privacySections: LegalModalSection[] = [
+    {
+      heading: 'Payment Data Handling',
+      paragraphs: [
+        'We store booking and payment-related metadata needed to complete and verify your reservation.',
+        'Sensitive payment processing is handled through secure third-party checkout channels such as PayMongo.',
+      ],
+    },
+    {
+      heading: 'Operational Use',
+      paragraphs: [
+        'Booking and payment records may be used by administrators for support, validation, and reporting.',
+        'Stored records are retained according to operational and compliance requirements.',
+      ],
+    },
   ];
 
   constructor(
@@ -61,6 +100,11 @@ export class Payment {
 
   async confirmPayment(): Promise<void> {
     this.errorMessage = '';
+
+    if (!this.hasAcceptedPolicies) {
+      this.errorMessage = 'You must agree to the Terms and Privacy Policy before confirming payment.';
+      return;
+    }
 
     if (this.selectedMethod === 'cash') {
       await this.router.navigate([this.booking.returnPath]);
@@ -208,5 +252,21 @@ export class Payment {
     }
 
     return 'Payment initialization failed. Please try again.';
+  }
+
+  openTermsModal(): void {
+    this.isTermsModalOpen = true;
+  }
+
+  closeTermsModal(): void {
+    this.isTermsModalOpen = false;
+  }
+
+  openPrivacyModal(): void {
+    this.isPrivacyModalOpen = true;
+  }
+
+  closePrivacyModal(): void {
+    this.isPrivacyModalOpen = false;
   }
 }

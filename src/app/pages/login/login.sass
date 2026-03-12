@@ -99,11 +99,50 @@ h1
 	color: var(--ink-soft)
 	line-height: 1.45
 
+.consent-box
+	margin-bottom: .95rem
+	padding: .72rem .75rem
+	border-radius: .72rem
+	border: 1px solid var(--line)
+	background: color-mix(in srgb, var(--card) 72%, white)
+
+.consent-check
+	display: flex
+	align-items: flex-start
+	gap: .55rem
+	font-size: .86rem
+	color: var(--ink-soft)
+	line-height: 1.4
+
+.consent-check input
+	margin-top: .12rem
+
+.consent-links
+	margin-top: .55rem
+	display: flex
+	flex-wrap: wrap
+	gap: .45rem
+
+.link-btn
+	width: auto
+	padding: .38rem .55rem
+	border-radius: .5rem
+	border: 1px solid var(--line)
+	font-size: .78rem
+	font-weight: 700
+	background: #fff7eb
+	color: #6b4626
+	box-shadow: none
+
+.link-btn:hover
+	background: #ffefd9
+	border-color: var(--accent)
+
 .actions
 	display: block
 	margin-top: .2rem
 
-button
+.google-btn
 	border: none
 	border-radius: .6rem
 	padding: .72rem .9rem
@@ -114,7 +153,7 @@ button
 	color: #fff
 	width: 100%
 
-button:disabled
+.google-btn:disabled
 	opacity: .65
 	cursor: not-allowed
 

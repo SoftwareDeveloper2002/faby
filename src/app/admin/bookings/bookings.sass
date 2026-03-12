@@ -3,21 +3,35 @@
 	min-height: 100dvh
 
 .admin-bookings
-	--bg-1: #f9f1e4
-	--bg-2: #ecd9bc
-	--panel: #fff9f2
-	--line: #dbbf9c
-	--ink: #2f2114
-	--ink-soft: #6d563a
-	--accent: #995d2d
+	--bg-1: #f5eee2
+	--bg-2: #ead4b3
+	--bg-3: #d8b48d
+	--panel: #fffaf2
+	--line: #d9b891
+	--ink: #2d1f13
+	--ink-soft: #6e5638
+	--accent: #8f4f24
+	--accent-soft: #f2dfc8
 	min-height: 100dvh
-	padding: 1.1rem
-	background: linear-gradient(155deg, var(--bg-1), var(--bg-2))
+	padding: clamp(1rem, 2.5vw, 1.5rem)
+	background: radial-gradient(circle at 8% 4%, rgba(255, 255, 255, .78), transparent 33%), radial-gradient(circle at 92% 91%, rgba(255, 247, 233, .7), transparent 36%), linear-gradient(155deg, var(--bg-1), var(--bg-2) 58%, var(--bg-3))
 	color: var(--ink)
+
+.panel
+	border: 1px solid color-mix(in srgb, var(--line) 85%, #fff)
+	border-radius: 1rem
+	background: color-mix(in srgb, var(--panel) 88%, white)
+	box-shadow: 0 16px 32px rgba(67, 42, 22, .14)
+	backdrop-filter: blur(2px)
 
 .hero
 	max-width: 72rem
 	margin: 0 auto 1rem
+	padding: 1rem 1.05rem
+	display: flex
+	justify-content: space-between
+	gap: .9rem
+	align-items: flex-start
 
 .eyebrow
 	margin: 0 0 .35rem
@@ -29,26 +43,49 @@
 
 h1
 	margin: 0
-	font-size: clamp(1.5rem, 3vw, 2.1rem)
+	font-size: clamp(1.5rem, 3vw, 2.2rem)
+	line-height: 1.1
 
 .hero-copy
 	margin: .55rem 0 0
+	max-width: 52ch
 	color: var(--ink-soft)
+
+.hero-chip
+	min-width: 9.2rem
+	padding: .65rem .72rem
+	border-radius: .8rem
+	border: 1px solid color-mix(in srgb, var(--line) 70%, #fff)
+	background: linear-gradient(145deg, color-mix(in srgb, var(--accent-soft) 65%, #fff), #fff)
+
+.chip-label
+	margin: 0
+	font-size: .72rem
+	font-weight: 700
+	text-transform: uppercase
+	letter-spacing: .07em
+	color: var(--ink-soft)
+
+.chip-value
+	margin: .22rem 0 0
+	font-size: 1.45rem
+	font-weight: 800
 
 .alert
 	max-width: 72rem
 	margin: 0 auto .8rem
-	padding: .62rem .72rem
+	padding: .68rem .78rem
 	border-radius: .58rem
 	font-size: .9rem
+	font-weight: 600
 
 .alert.error
-	background: #fff1f1
+	background: #fff2f2
 	border: 1px solid #efb7b7
 	color: #8f2d2d
 
 .alert.success
-	background: #ecfff1
+	background: #edfff2
 	border: 1px solid #9adab0
 	color: #1f6c3a
 
@@ -57,13 +94,22 @@ h1
 	margin: 0 auto .9rem
 	display: grid
 	grid-template-columns: repeat(3, minmax(0, 1fr))
-	gap: .75rem
+	gap: .7rem
 
 .summary-card
-	padding: .75rem .8rem
-	border: 1px solid var(--line)
-	border-radius: .72rem
-	background: color-mix(in srgb, var(--panel) 88%, white)
+	padding: .82rem .88rem
+	border: 1px solid color-mix(in srgb, var(--line) 90%, #fff)
+	border-radius: .82rem
+	background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 85%, #fff), #fff)
+
+.summary-card.paid
+	box-shadow: inset 0 0 0 2px rgba(43, 139, 86, .11)
+
+.summary-card.pending
+	box-shadow: inset 0 0 0 2px rgba(174, 118, 42, .11)
+
+.summary-card.cancelled
+	box-shadow: inset 0 0 0 2px rgba(166, 63, 63, .12)
 
 .summary-card .label
 	margin: 0
@@ -73,39 +119,58 @@ h1
 
 .summary-card .value
 	margin: .28rem 0 0
-	font-size: 1.35rem
+	font-size: 1.42rem
 	font-weight: 800
 
 .toolbar
 	max-width: 72rem
 	margin: 0 auto .9rem
+	padding: .82rem
+	display: flex
+	align-items: flex-end
+	justify-content: space-between
+	gap: .8rem
+
+.search-wrap
 	display: grid
 	gap: .38rem
+	width: min(36rem, 100%)
 
 .toolbar label
 	font-size: .84rem
 	font-weight: 700
 
 .toolbar input
-	padding: .62rem .72rem
-	border-radius: .58rem
+	padding: .68rem .74rem
+	border-radius: .62rem
 	border: 1px solid var(--line)
 	font-size: .92rem
+	background: #fff
+
+.toolbar input:focus
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
+
+.result-meta
+	margin: 0
+	font-size: .82rem
+	font-weight: 700
+	color: var(--ink-soft)
 
 .loading-state, .empty-state
 	max-width: 72rem
 	margin: 0 auto
-	padding: 1rem
-	border: 1px dashed var(--line)
-	border-radius: .72rem
+	padding: 1.05rem
+	border: 1px dashed color-mix(in srgb, var(--line) 80%, #fff)
+	border-radius: .82rem
 	background: #fff
 
 .table-wrap
 	max-width: 72rem
 	margin: 0 auto
 	overflow-x: auto
-	border: 1px solid var(--line)
-	border-radius: .72rem
+	border-radius: 1rem
 	background: #fff
 
 table
@@ -114,7 +179,7 @@ table
 	min-width: 58rem
 
 th, td
-	padding: .7rem .65rem
+	padding: .72rem .7rem
 	border-bottom: 1px solid #efe1cb
 	text-align: left
 	font-size: .86rem
@@ -126,23 +191,46 @@ th
 	letter-spacing: .05em
 	text-transform: uppercase
 	color: var(--ink-soft)
-	background: #fff8ee
+	background: #fff6ea
+	position: sticky
+	top: 0
+	z-index: 2
+
+tbody tr
+	transition: background-color .15s ease
+
+tbody tr:hover
+	background: #fff8ef
+
+.product-name
+	margin: 0
+	font-weight: 700
+
+.amount
+	font-weight: 700
+	color: #5f3d22
 
 .actions
 	display: flex
+	flex-wrap: wrap
 	gap: .45rem
 
 .btn-primary, .btn-secondary, .btn-danger
 	border: none
-	border-radius: .54rem
-	padding: .46rem .64rem
+	border-radius: .6rem
+	padding: .48rem .68rem
 	font-size: .8rem
 	font-weight: 700
 	cursor: pointer
+	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
+
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover
+	transform: translateY(-1px)
 
 .btn-primary
 	background: linear-gradient(135deg, #a46433, #874a21)
 	color: #fff
+	box-shadow: 0 8px 16px rgba(135, 74, 33, .24)
 
 .btn-secondary
 	background: #f3e5d2
@@ -155,10 +243,11 @@ th
 .btn-danger:disabled
 	opacity: .6
 	cursor: not-allowed
+	transform: none
 
 .status-pill
 	display: inline-block
-	padding: .2rem .46rem
+	padding: .22rem .5rem
 	border-radius: 999px
 	font-size: .74rem
 	font-weight: 800
@@ -180,7 +269,8 @@ th
 .modal-backdrop
 	position: fixed
 	inset: 0
-	background: rgba(28, 20, 12, .42)
+	background: rgba(26, 19, 12, .52)
+	backdrop-filter: blur(3px)
 	z-index: 39
 
 .modal
@@ -188,31 +278,46 @@ th
 	left: 50%
 	top: 50%
 	transform: translate(-50%, -50%)
-	width: min(46rem, calc(100vw - 2rem))
+	width: min(48rem, calc(100vw - 2rem))
 	max-height: calc(100vh - 2rem)
 	overflow: auto
-	border: 1px solid var(--line)
-	border-radius: .8rem
-	background: #fffdf8
-	padding: .95rem
+	border-radius: 1rem
+	padding: 1rem
 	z-index: 40
-	box-shadow: 0 20px 36px rgba(77, 53, 32, .18)
+	box-shadow: 0 26px 46px rgba(48, 31, 16, .28)
 
 .modal h2
-	margin: 0 0 .8rem
+	margin: 0
+	font-size: 1.35rem
+
+.modal-copy
+	margin: .35rem 0 .85rem
+	font-size: .9rem
+	color: var(--ink-soft)
 
 .modal label
 	display: grid
-	gap: .33rem
+	gap: .36rem
 	margin-bottom: .72rem
 	font-size: .84rem
 	font-weight: 700
 
 .modal input, .modal select
-	padding: .55rem .65rem
-	border-radius: .52rem
+	padding: .6rem .68rem
+	border-radius: .6rem
 	border: 1px solid var(--line)
 	font-size: .9rem
+	background: #fff
+
+.modal input:focus, .modal select:focus
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
+
+.modal input[readonly], .modal select:disabled
+	background: #f7efe3
+	color: #7f6444
+	cursor: not-allowed
 
 .modal-grid
 	display: grid
@@ -223,11 +328,24 @@ th
 	display: flex
 	justify-content: flex-end
 	gap: .52rem
-	margin-top: .2rem
+	margin-top: .4rem
 
 @media (max-width: 920px)
+	.hero
+		flex-direction: column
+
+	.hero-chip
+		width: 100%
+
 	.summary-grid
 		grid-template-columns: 1fr
+
+	.toolbar
+		flex-direction: column
+		align-items: stretch
+
+	.search-wrap
+		width: 100%
 
 	.modal-grid
 		grid-template-columns: 1fr

@@ -12,8 +12,19 @@
 		<h1 id="login-title">Login With Google</h1>
 		<p class="intro">Sign in with your Google account to continue your motorcycle booking.</p>
 
+		<div class="consent-box">
+			<label class="consent-check">
+				<input type="checkbox" [(ngModel)]="hasAcceptedPolicies" />
+				<span>I agree to the Terms and Conditions and Privacy Policy.</span>
+			</label>
+			<div class="consent-links">
+				<button type="button" class="link-btn" (click)="openTermsModal()">View Terms and Conditions</button>
+				<button type="button" class="link-btn" (click)="openPrivacyModal()">View Privacy Policy</button>
+			</div>
+		</div>
+
 		<div class="actions">
-			<button class="google-btn" type="button" (click)="signInWithGoogle()" [disabled]="isSigningIn">
+			<button class="google-btn" type="button" (click)="signInWithGoogle()" [disabled]="isSigningIn || !hasAcceptedPolicies">
 				{{ isSigningIn ? 'Signing in...' : 'Continue with Google' }}
 			</button>
 		</div>
@@ -26,4 +37,18 @@
 			<p class="status error">{{ errorMessage }}</p>
 		}
 	</section>
+
+	<app-legal-modal
+		[isOpen]="isTermsModalOpen"
+		title="Terms and Conditions"
+		[sections]="termsSections"
+		(close)="closeTermsModal()">
+	</app-legal-modal>
+
+	<app-legal-modal
+		[isOpen]="isPrivacyModalOpen"
+		title="Privacy Policy"
+		[sections]="privacySections"
+		(close)="closePrivacyModal()">
+	</app-legal-modal>
 </main>

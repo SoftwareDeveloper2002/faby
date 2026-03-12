@@ -1,0 +1,78 @@
+.legal-modal-backdrop
+  position: fixed
+  inset: 0
+  background: rgba(28, 19, 10, .52)
+  backdrop-filter: blur(3px)
+  z-index: 80
+
+.legal-modal
+  position: fixed
+  left: 50%
+  top: 50%
+  transform: translate(-50%, -50%)
+  width: min(42rem, calc(100vw - 1.5rem))
+  max-height: calc(100vh - 1.5rem)
+  display: grid
+  grid-template-rows: auto 1fr auto
+  border: 1px solid #d7ba96
+  border-radius: .95rem
+  background: #fffaf2
+  box-shadow: 0 24px 44px rgba(44, 28, 14, .25)
+  overflow: hidden
+  z-index: 81
+
+.legal-modal__header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: .7rem
+  padding: .85rem .95rem
+  background: linear-gradient(135deg, #f7e6cf, #f2d7b1)
+  border-bottom: 1px solid #ddc4a3
+
+.legal-modal__header h2
+  margin: 0
+  font-size: 1.1rem
+
+.icon-close
+  width: 2rem
+  height: 2rem
+  border: 1px solid #cfae85
+  border-radius: 999px
+  background: #fff7eb
+  color: #5f3e23
+  font-size: .95rem
+  font-weight: 800
+  cursor: pointer
+
+.legal-modal__body
+  padding: .9rem .95rem
+  overflow: auto
+  display: grid
+  gap: .8rem
+
+.legal-section h3
+  margin: 0 0 .35rem
+  font-size: .95rem
+
+.legal-section p
+  margin: 0 0 .45rem
+  color: #5f4930
+  line-height: 1.45
+  font-size: .88rem
+
+.legal-modal__footer
+  padding: .75rem .95rem
+  border-top: 1px solid #e3ceb2
+  background: #fffdf8
+  display: flex
+  justify-content: flex-end
+
+.btn-close
+  border: none
+  border-radius: .58rem
+  padding: .52rem .75rem
+  font-weight: 700
+  color: #fff
+  background: linear-gradient(135deg, #975927, #7f441b)
+  cursor: pointer

@@ -46,8 +46,33 @@
       <p class="error-message">{{ errorMessage }}</p>
     }
 
-    <button type="button" class="btn-primary" [disabled]="isProcessing" (click)="confirmPayment()">
+    <div class="consent-box">
+      <label class="consent-check">
+        <input type="checkbox" [(ngModel)]="hasAcceptedPolicies" />
+        <span>I agree to the Terms and Conditions and Privacy Policy for payment processing.</span>
+      </label>
+      <div class="consent-links">
+        <button type="button" class="link-btn" (click)="openTermsModal()">View Terms and Conditions</button>
+        <button type="button" class="link-btn" (click)="openPrivacyModal()">View Privacy Policy</button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-primary" [disabled]="isProcessing || !hasAcceptedPolicies" (click)="confirmPayment()">
       {{ isProcessing ? 'Processing...' : 'Confirm Payment' }}
     </button>
   </section>
+
+  <app-legal-modal
+    [isOpen]="isTermsModalOpen"
+    title="Terms and Conditions"
+    [sections]="termsSections"
+    (close)="closeTermsModal()">
+  </app-legal-modal>
+
+  <app-legal-modal
+    [isOpen]="isPrivacyModalOpen"
+    title="Privacy Policy"
+    [sections]="privacySections"
+    (close)="closePrivacyModal()">
+  </app-legal-modal>
 </main>
