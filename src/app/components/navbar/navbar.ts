@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, ElementRef, HostListener, OnDestroy } from '@angular/core';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -12,16 +13,31 @@ export class Navbar {
   isAuthenticated = false;
   userName = '';
   dropdownOpen = false;
+  private readonly routerSubscription: Subscription;
 
   constructor(
     private readonly router: Router,
     private readonly elementRef: ElementRef<HTMLElement>,
   ) {
     this.syncAuthState();
+    this.routerSubscription = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.syncAuthState();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routerSubscription.unsubscribe();
   }
 
   @HostListener('window:storage')
   onStorageChange(): void {
+    this.syncAuthState();
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
     this.syncAuthState();
   }
 
