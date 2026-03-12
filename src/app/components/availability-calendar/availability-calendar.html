@@ -1,0 +1,59 @@
+<div class="selected-range" aria-live="polite">
+  <p class="selected-range-copy">{{ selectedRangeLabel }}</p>
+  @if (showClearButton) {
+    <button class="clear-selection-btn" type="button" (click)="onClearSelection()">{{ clearButtonText }}</button>
+  }
+</div>
+
+@if (selectionError) {
+  <p class="error">{{ selectionError }}</p>
+}
+
+@if (conflictError) {
+  <p class="error">{{ conflictError }}</p>
+}
+
+<div class="calendar-card" aria-label="Availability calendar">
+  <div class="calendar-head">
+    <h3>{{ heading }}</h3>
+    <p>Booked dates are blocked for <strong>{{ unitName }}</strong>.</p>
+  </div>
+
+  @if (isLoading) {
+    <p class="calendar-hint">{{ loadingText }}</p>
+  } @else {
+    <div class="calendar-legend" role="list" aria-label="Calendar legend">
+      <span role="listitem"><i class="dot booked"></i> Booked</span>
+      <span role="listitem"><i class="dot selected"></i> Your selection</span>
+      <span role="listitem"><i class="dot available"></i> Available</span>
+    </div>
+
+    <div class="calendar-months">
+      @for (month of calendarMonths; track month.key) {
+        <div class="calendar-month">
+          <h4>{{ month.label }}</h4>
+          <div class="weekdays">
+            @for (label of weekdayLabels; track label) {
+              <span>{{ label }}</span>
+            }
+          </div>
+          <div class="days-grid">
+            @for (day of month.days; track day.iso) {
+              <button class="day"
+                type="button"
+                (click)="onDayClick(day)"
+                [disabled]="!day.isSelectable"
+                [class.current]="day.isCurrentMonth"
+                [class.booked]="day.isBooked"
+                [class.past]="day.isPast"
+                [class.in-range]="day.isInSelectionRange"
+                [class.selection-edge]="day.isSelectionStart || day.isSelectionEnd">
+                {{ day.day }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
