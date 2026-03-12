@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../component/navbar/navbar';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { get, getDatabase, ref, update } from 'firebase/database';
+import { get, getDatabase, push, ref, set, update } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
@@ -65,6 +65,7 @@ export class Bookings implements OnInit {
   bookings: BookingRecord[] = [];
 
   isEditModalOpen = false;
+  isCreateMode = false;
   editingBookingId = '';
   editForm: BookingFormModel = {
     email: '',
@@ -119,6 +120,7 @@ export class Bookings implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
     this.isEditModalOpen = true;
+    this.isCreateMode = false;
     this.editingBookingId = booking.id;
     this.editForm = {
       email: booking.email,
@@ -134,38 +136,43 @@ export class Bookings implements OnInit {
     };
   }
 
+  openCreateModal(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.isEditModalOpen = true;
+    this.isCreateMode = true;
+    this.editingBookingId = '';
+    this.editForm = {
+      email: '',
+      motorcycleName: '',
+      bookingType: 'motorcycle',
+      startDate: '',
+      returnDate: '',
+      totalDays: 1,
+      totalAmount: 0,
+      paymentMethod: 'cash',
+      paymentStatus: 'not_paid',
+      bank: '',
+    };
+  }
+
   closeEditModal(): void {
     this.isEditModalOpen = false;
+    this.isCreateMode = false;
     this.editingBookingId = '';
   }
 
   async saveBookingUpdates(): Promise<void> {
+    if (this.isCreateMode) {
+      await this.createBooking();
+      return;
+    }
+
     if (!this.editingBookingId) {
       return;
     }
 
-    if (!this.editForm.motorcycleName.trim()) {
-      this.errorMessage = 'Product name is required.';
-      return;
-    }
-
-    if (!this.editForm.email.trim()) {
-      this.errorMessage = 'User email is required.';
-      return;
-    }
-
-    if (!this.editForm.startDate || !this.editForm.returnDate) {
-      this.errorMessage = 'Start and return dates are required.';
-      return;
-    }
-
-    if (new Date(`${this.editForm.returnDate}T00:00:00`) < new Date(`${this.editForm.startDate}T00:00:00`)) {
-      this.errorMessage = 'Return date must be the same or later than the start date.';
-      return;
-    }
-
-    if (!Number.isFinite(this.editForm.totalAmount) || this.editForm.totalAmount < 0) {
-      this.errorMessage = 'Total amount must be 0 or higher.';
+    if (!this.validateBookingForm()) {
       return;
     }
 
@@ -209,6 +216,100 @@ export class Bookings implements OnInit {
     } finally {
       this.isSaving = false;
     }
+  }
+
+  private async createBooking(): Promise<void> {
+    if (!this.validateBookingForm()) {
+      return;
+    }
+
+    this.isSaving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const paymentsRef = ref(db, 'successfulPayments');
+      const newBookingRef = push(paymentsRef);
+
+      const paymentMethod = this.editForm.paymentStatus === 'not_paid'
+        ? 'cash'
+        : this.editForm.paymentMethod || 'cash';
+
+      const payload = {
+        email: this.editForm.email.trim(),
+        motorcycleId: this.createProductId(this.editForm.motorcycleName),
+        motorcycleName: this.editForm.motorcycleName.trim(),
+        bookingType: this.editForm.bookingType.trim().toLowerCase(),
+        startDate: this.editForm.startDate,
+        returnDate: this.editForm.returnDate,
+        totalDays: Number(this.editForm.totalDays || 0),
+        totalAmount: Number(this.editForm.totalAmount || 0),
+        paymentMethod,
+        paymentStatus: this.editForm.paymentStatus,
+        bank: paymentMethod === 'bank' ? this.editForm.bank.trim().toLowerCase() : '',
+        status: this.editForm.paymentStatus === 'cancelled' ? 'cancelled' : 'success',
+        source: 'admin_manual',
+        createdAt: new Date().toISOString(),
+      };
+
+      await set(newBookingRef, payload);
+
+      this.successMessage = 'Booking created successfully.';
+      this.closeEditModal();
+      await this.loadBookings();
+    } catch (error) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        this.errorMessage = String((error as { message: unknown }).message);
+      } else {
+        this.errorMessage = 'Unable to create booking right now.';
+      }
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  private validateBookingForm(): boolean {
+    if (!this.editForm.motorcycleName.trim()) {
+      this.errorMessage = 'Product name is required.';
+      return false;
+    }
+
+    if (!this.editForm.email.trim()) {
+      this.errorMessage = 'User email is required.';
+      return false;
+    }
+
+    if (!this.editForm.startDate || !this.editForm.returnDate) {
+      this.errorMessage = 'Start and return dates are required.';
+      return false;
+    }
+
+    if (new Date(`${this.editForm.returnDate}T00:00:00`) < new Date(`${this.editForm.startDate}T00:00:00`)) {
+      this.errorMessage = 'Return date must be the same or later than the start date.';
+      return false;
+    }
+
+    if (!Number.isFinite(this.editForm.totalAmount) || this.editForm.totalAmount < 0) {
+      this.errorMessage = 'Total amount must be 0 or higher.';
+      return false;
+    }
+
+    if (!Number.isFinite(this.editForm.totalDays) || this.editForm.totalDays <= 0) {
+      this.errorMessage = 'Total days must be greater than 0.';
+      return false;
+    }
+
+    return true;
+  }
+
+  private createProductId(name: string): string {
+    return name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   async cancelBooking(booking: BookingRecord): Promise<void> {

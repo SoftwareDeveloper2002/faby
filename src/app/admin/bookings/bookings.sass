@@ -158,6 +158,13 @@ h1
 	font-weight: 700
 	color: var(--ink-soft)
 
+.toolbar-actions
+	display: flex
+	align-items: center
+	justify-content: flex-end
+	gap: .65rem
+	flex-wrap: wrap
+
 .loading-state, .empty-state
 	max-width: 72rem
 	margin: 0 auto
@@ -346,6 +353,9 @@ tbody tr:hover
 
 	.search-wrap
 		width: 100%
+
+	.toolbar-actions
+		justify-content: space-between
 
 	.modal-grid
 		grid-template-columns: 1fr

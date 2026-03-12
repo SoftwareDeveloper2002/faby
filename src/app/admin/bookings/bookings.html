@@ -46,7 +46,10 @@
 				placeholder="Search by product, email, type, or payment status"
 			/>
 		</div>
-		<p class="result-meta">Showing {{ filteredBookings.length }} of {{ bookings.length }} bookings</p>
+		<div class="toolbar-actions">
+			<p class="result-meta">Showing {{ filteredBookings.length }} of {{ bookings.length }} bookings</p>
+			<button type="button" class="btn-primary" (click)="openCreateModal()">Create Booking</button>
+		</div>
 	</section>
 
 	@if (isLoading) {
@@ -106,27 +109,31 @@
 	@if (isEditModalOpen) {
 		<div class="modal-backdrop" (click)="closeEditModal()"></div>
 		<section class="modal panel" aria-label="Edit booking" role="dialog" aria-modal="true">
-			<h2>Edit Booking</h2>
-			<p class="modal-copy">Update payment details and booking schedule for this record.</p>
+			<h2>{{ isCreateMode ? 'Create Booking' : 'Edit Booking' }}</h2>
+			<p class="modal-copy">{{ isCreateMode ? 'Create a new booking record and payment status.' : 'Update payment details and booking schedule for this record.' }}</p>
 
 			<label>
 				User Email
-				<select [(ngModel)]="editForm.email" [disabled]="true">
-					@for (email of uniqueEmails; track email) {
-						<option [value]="email">{{ email }}</option>
-					}
-				</select>
+				@if (isCreateMode) {
+					<input type="email" [(ngModel)]="editForm.email" placeholder="user@example.com" />
+				} @else {
+					<select [(ngModel)]="editForm.email" [disabled]="true">
+						@for (email of uniqueEmails; track email) {
+							<option [value]="email">{{ email }}</option>
+						}
+					</select>
+				}
 			</label>
 
 			<label>
 				Product Name
-				<input type="text" [(ngModel)]="editForm.motorcycleName" readonly />
+				<input type="text" [(ngModel)]="editForm.motorcycleName" [readonly]="!isCreateMode" />
 			</label>
 
 			<div class="modal-grid">
 				<label>
 					Booking Type
-					<select [(ngModel)]="editForm.bookingType" [disabled]="true">
+					<select [(ngModel)]="editForm.bookingType" [disabled]="!isCreateMode">
 						<option value="motorcycle">Motorcycle</option>
 						<option value="room">Room</option>
 						<option value="tent">Tent</option>
@@ -139,6 +146,9 @@
 					<select [(ngModel)]="editForm.paymentMethod">
 						<option value="cash">Cash</option>
 						<option value="gcash">GCash</option>
+						<option value="paymaya">Maya</option>
+						<option value="grab_pay">GrabPay</option>
+						<option value="qrph">QRPh</option>
 						<option value="bank">Bank</option>
 					</select>
 				</label>
@@ -179,7 +189,9 @@
 
 			<div class="modal-actions">
 				<button type="button" class="btn-secondary" (click)="closeEditModal()">Close</button>
-				<button type="button" class="btn-primary" (click)="saveBookingUpdates()" [disabled]="isSaving">Save Updates</button>
+				<button type="button" class="btn-primary" (click)="saveBookingUpdates()" [disabled]="isSaving">
+					{{ isCreateMode ? 'Create Booking' : 'Save Updates' }}
+				</button>
 			</div>
 		</section>
 	}
