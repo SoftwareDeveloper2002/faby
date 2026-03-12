@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegalModalComponent, LegalModalSection } from '../../components/legal-modal/legal-modal';
 import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getDatabase, ref, set } from 'firebase/database';
 import {
   Auth,
   GoogleAuthProvider,
@@ -15,6 +16,7 @@ const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
   authDomain: 'faby-be0b9.firebaseapp.com',
   projectId: 'faby-be0b9',
+  databaseURL: 'https://faby-be0b9-default-rtdb.asia-southeast1.firebasedatabase.app',
   storageBucket: 'faby-be0b9.firebasestorage.app',
   messagingSenderId: '71671731623',
   appId: '1:71671731623:web:6df23b47797e12b9aad282',
@@ -128,6 +130,15 @@ export class Login {
       localStorage.setItem('fabyPhoneAuth', 'true');
       localStorage.setItem('fabyUserEmail', result.user.email ?? '');
       localStorage.setItem('fabyUserName', result.user.displayName ?? '');
+
+      const db = getDatabase(getApp(), firebaseConfig.databaseURL);
+      await set(ref(db, `appUsers/${result.user.uid}`), {
+        email: result.user.email ?? '',
+        displayName: result.user.displayName ?? '',
+        provider: 'google',
+        updatedAt: new Date().toISOString(),
+      });
+
       this.successMessage = `Login successful. Welcome, ${result.user.displayName ?? 'guest'}!`;
 
       if (this.redirectTo) {

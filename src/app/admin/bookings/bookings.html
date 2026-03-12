@@ -115,7 +115,12 @@
 			<label>
 				User Email
 				@if (isCreateMode) {
-					<input type="email" [(ngModel)]="editForm.email" placeholder="user@example.com" />
+					<select [(ngModel)]="editForm.email">
+						<option value="">Select User Email</option>
+						@for (email of selectableUserEmails; track email) {
+							<option [value]="email">{{ email }}</option>
+						}
+					</select>
 				} @else {
 					<select [(ngModel)]="editForm.email" [disabled]="true">
 						@for (email of uniqueEmails; track email) {

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../component/navbar/navbar';
 import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { get, getDatabase, push, ref, set, update } from 'firebase/database';
 
 const firebaseConfig = {
@@ -74,6 +75,7 @@ export class Bookings implements OnInit {
 
   bookings: BookingRecord[] = [];
   adminProducts: AdminProductOption[] = [];
+  authUserEmails: string[] = [];
 
   isEditModalOpen = false;
   isCreateMode = false;
@@ -93,7 +95,27 @@ export class Bookings implements OnInit {
   };
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.loadBookings(), this.loadAdminProducts()]);
+    await Promise.all([this.loadBookings(), this.loadAdminProducts(), this.loadAuthUserEmails()]);
+  }
+
+  get selectableUserEmails(): string[] {
+    const merged = new Set<string>();
+
+    this.authUserEmails.forEach((email) => {
+      const trimmed = email.trim();
+      if (trimmed) {
+        merged.add(trimmed);
+      }
+    });
+
+    this.uniqueEmails.forEach((email) => {
+      const trimmed = email.trim();
+      if (trimmed) {
+        merged.add(trimmed);
+      }
+    });
+
+    return [...merged].sort((a, b) => a.localeCompare(b));
   }
 
   get availableProductsForForm(): AdminProductOption[] {
@@ -176,6 +198,9 @@ export class Bookings implements OnInit {
       paymentStatus: 'not_paid',
       bank: '',
     };
+
+    const firstEmail = this.selectableUserEmails[0] ?? '';
+    this.editForm.email = firstEmail;
     this.recalculateComputedFields();
   }
 
@@ -463,6 +488,37 @@ export class Bookings implements OnInit {
         .filter((product) => product.title && Number.isFinite(product.ratePerDay) && product.ratePerDay > 0);
     } catch {
       this.adminProducts = [];
+    }
+  }
+
+  private async loadAuthUserEmails(): Promise<void> {
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+
+      const snapshot = await get(ref(db, 'appUsers'));
+      const emails = new Set<string>();
+
+      if (snapshot.exists()) {
+        const users = snapshot.val() as Record<string, { email?: unknown }>;
+        Object.values(users).forEach((user) => {
+          const email = String(user?.email ?? '').trim();
+          if (email) {
+            emails.add(email);
+          }
+        });
+      }
+
+      const currentEmail = auth.currentUser?.email?.trim() || localStorage.getItem('fabyUserEmail')?.trim() || '';
+      if (currentEmail) {
+        emails.add(currentEmail);
+      }
+
+      this.authUserEmails = [...emails].sort((a, b) => a.localeCompare(b));
+    } catch {
+      const fallbackEmail = localStorage.getItem('fabyUserEmail')?.trim() || '';
+      this.authUserEmails = fallbackEmail ? [fallbackEmail] : [];
     }
   }
 
