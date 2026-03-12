@@ -129,28 +129,30 @@ export class Payment {
       return;
     }
 
+    const checkoutMethod = this.getCheckoutMethod();
+    localStorage.setItem('pendingPaymentRecord', JSON.stringify(this.buildPendingPaymentRecord(checkoutMethod)));
+
     if (this.selectedMethod === 'cash') {
-      await this.router.navigate([this.booking.returnPath]);
+      await this.router.navigate(['/payment-success'], {
+        queryParams: {
+          motorcycleId: this.booking.motorcycleId,
+          motorcycleName: this.booking.motorcycleName,
+          totalDays: this.booking.totalDays,
+          totalAmount: this.booking.totalAmount,
+          startDate: this.booking.startDate,
+          returnDate: this.booking.returnDate,
+          bookingType: this.booking.bookingType,
+          paymentMethod: 'cash',
+          bank: '',
+          source: 'cash_on_arrival',
+        },
+      });
       return;
     }
 
     this.isProcessing = true;
 
     try {
-      const checkoutMethod = this.getCheckoutMethod();
-      const pendingPaymentRecord = {
-        motorcycleId: this.booking.motorcycleId,
-        motorcycleName: this.booking.motorcycleName,
-        totalDays: this.booking.totalDays,
-        totalAmount: this.booking.totalAmount,
-        startDate: this.booking.startDate,
-        returnDate: this.booking.returnDate,
-        bookingType: this.booking.bookingType,
-        paymentMethod: checkoutMethod,
-        bank: this.selectedMethod === 'bank' ? this.selectedBank : '',
-      };
-      localStorage.setItem('pendingPaymentRecord', JSON.stringify(pendingPaymentRecord));
-
       const checkoutUrl = await this.createPayMongoCheckoutUrl();
       window.location.href = checkoutUrl;
     } catch (error) {
@@ -158,6 +160,21 @@ export class Payment {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  private buildPendingPaymentRecord(checkoutMethod: string): Record<string, string | number> {
+    return {
+      motorcycleId: this.booking.motorcycleId,
+      motorcycleName: this.booking.motorcycleName,
+      totalDays: this.booking.totalDays,
+      totalAmount: this.booking.totalAmount,
+      startDate: this.booking.startDate,
+      returnDate: this.booking.returnDate,
+      bookingType: this.booking.bookingType,
+      paymentMethod: checkoutMethod,
+      bank: this.selectedMethod === 'bank' ? this.selectedBank : '',
+      source: checkoutMethod === 'cash' ? 'cash_on_arrival' : 'paymongo_checkout',
+    };
   }
 
   private async createPayMongoCheckoutUrl(): Promise<string> {
@@ -179,9 +196,11 @@ export class Payment {
 
     const candidateUrls = this.getCheckoutEndpointCandidates();
     let response: Response | null = null;
+    const attempted: string[] = [];
 
     for (const url of candidateUrls) {
       const candidateResponse = await this.requestCheckout(url, payload);
+      attempted.push(url);
 
       if (!candidateResponse) {
         continue;
@@ -192,14 +211,14 @@ export class Payment {
         break;
       }
 
-      if (candidateResponse.status !== 404) {
+      if (!this.shouldTryNextCandidate(candidateResponse.status)) {
         response = candidateResponse;
         break;
       }
     }
 
     if (!response) {
-      throw new Error('Unable to reach payment API. Ensure your backend is running and reachable at https://faby.soltryxsolutions.com or set localStorage.paymongoApiBaseUrl to your backend URL.');
+      throw new Error(`Unable to reach payment API. Checked: ${attempted.join(', ')}. Ensure your backend is running and reachable at https://faby.soltryxsolutions.com, or run localStorage.removeItem('paymongoApiBaseUrl') to clear a stale override.`);
     }
 
     if (!response.ok) {
@@ -249,6 +268,18 @@ export class Payment {
     } catch {
       return null;
     }
+  }
+
+  private shouldTryNextCandidate(status: number): boolean {
+    if (status === 404) {
+      return true;
+    }
+
+    if (status >= 500) {
+      return true;
+    }
+
+    return false;
   }
 
   private getCheckoutEndpointCandidates(): string[] {

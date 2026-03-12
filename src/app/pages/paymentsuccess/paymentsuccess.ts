@@ -28,7 +28,7 @@ type SuccessfulPaymentRecord = {
   paymentMethod: string;
   bank: string;
   status: 'success';
-  source: 'paymongo_checkout';
+  source: 'paymongo_checkout' | 'cash_on_arrival';
   createdAt: string;
 };
 
@@ -66,7 +66,9 @@ export class Paymentsuccess implements OnInit {
       paymentMethod: String(params['paymentMethod'] ?? pendingPayment?.paymentMethod ?? ''),
       bank: String(params['bank'] ?? pendingPayment?.bank ?? ''),
       status: 'success',
-      source: 'paymongo_checkout',
+      source: String(params['source'] ?? pendingPayment?.source ?? '').trim() === 'cash_on_arrival' || String(params['paymentMethod'] ?? pendingPayment?.paymentMethod ?? '').trim() === 'cash'
+        ? 'cash_on_arrival'
+        : 'paymongo_checkout',
       createdAt: new Date().toISOString(),
     };
 
