@@ -18,16 +18,16 @@
     </section>
   } @else if (payments.length === 0) {
     <section class="state-card">
-      <p>No successful payment records yet.</p>
+      <p>No booking records found for this account yet.</p>
       <a class="btn" routerLink="/motorcycle-list">Browse Rentals</a>
     </section>
   } @else {
-    <section class="records" aria-label="Successful payment records">
+    <section class="records" aria-label="Booking and payment records">
       @for (payment of payments; track payment.id) {
         <article class="record-card">
           <div class="top-row">
             <h2>{{ payment.motorcycleName }}</h2>
-            <p class="status">Paid</p>
+            <p class="status" [class]="'status ' + getPaymentStatusClass(payment)">{{ getPaymentStatusLabel(payment) }}</p>
           </div>
 
           <p class="meta">{{ payment.startDate }} to {{ payment.returnDate }} • {{ payment.totalDays }} day(s)</p>

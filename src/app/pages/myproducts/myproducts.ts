@@ -27,6 +27,7 @@ type PaymentItem = {
   paymentMethod: string;
   paymentStatus?: string;
   status?: string;
+  source?: string;
   bank: string;
   createdAt: string;
   bookingType?: string;
@@ -244,7 +245,6 @@ export class Myproducts implements OnInit {
       const rawData = snapshot.val() as Record<string, Omit<PaymentItem, 'id'>>;
       this.payments = Object.entries(rawData)
         .map(([id, value]) => ({ id, ...value }))
-        .filter((payment) => this.isPaidPayment(payment))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
       if (error && typeof error === 'object' && 'message' in error) {
@@ -257,18 +257,50 @@ export class Myproducts implements OnInit {
     }
   }
 
-  private isPaidPayment(payment: PaymentItem): boolean {
+  getPaymentStatusLabel(payment: PaymentItem): string {
+    const normalized = this.getNormalizedPaymentStatus(payment);
+    if (normalized === 'paid') {
+      return 'Paid';
+    }
+
+    if (normalized === 'cancelled') {
+      return 'Cancelled';
+    }
+
+    return 'Not Paid';
+  }
+
+  getPaymentStatusClass(payment: PaymentItem): string {
+    const normalized = this.getNormalizedPaymentStatus(payment);
+    if (normalized === 'paid') {
+      return 'paid';
+    }
+
+    if (normalized === 'cancelled') {
+      return 'cancelled';
+    }
+
+    return 'not-paid';
+  }
+
+  private getNormalizedPaymentStatus(payment: PaymentItem): 'paid' | 'not_paid' | 'cancelled' {
     const paymentStatus = String(payment.paymentStatus ?? '').trim().toLowerCase();
     if (paymentStatus) {
-      return paymentStatus === 'paid';
+      if (paymentStatus === 'paid' || paymentStatus === 'not_paid' || paymentStatus === 'cancelled') {
+        return paymentStatus;
+      }
     }
 
     const bookingStatus = String(payment.status ?? '').trim().toLowerCase();
     if (bookingStatus === 'cancelled') {
-      return false;
+      return 'cancelled';
     }
 
     const method = String(payment.paymentMethod ?? '').trim().toLowerCase();
-    return method !== 'cash';
+    if (method === 'cash') {
+      return 'not_paid';
+    }
+
+    return 'paid';
   }
 }
