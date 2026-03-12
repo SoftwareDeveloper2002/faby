@@ -21,6 +21,7 @@ export type AvailabilityCalendarMonth = {
 
 @Component({
   selector: 'app-availability-calendar',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './availability-calendar.html',
   styleUrl: './availability-calendar.sass',

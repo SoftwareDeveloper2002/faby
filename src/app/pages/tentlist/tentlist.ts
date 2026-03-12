@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AvailabilityCalendarComponent } from '../../components/availability-calendar/availability-calendar';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { get, getDatabase, ref } from 'firebase/database';
 
@@ -70,7 +71,7 @@ type CalendarMonth = {
 
 @Component({
   selector: 'app-tentlist',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvailabilityCalendarComponent],
   templateUrl: './tentlist.html',
   styleUrl: './tentlist.sass',
 })

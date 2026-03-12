@@ -27,69 +27,21 @@
 				</select>
 			</div>
 
-			<div class="selected-range" aria-live="polite">
-				<p class="selected-range-copy">{{ selectedDateRangeLabel }}</p>
-				@if (bookingStartDate || bookingReturnDate) {
-					<button class="clear-selection-btn" type="button" (click)="resetCalendarSelection()">Clear dates</button>
-				}
-			</div>
-
 			@if (hasDateError) {
 				<p class="error">Returning date must be the same or later than the starting booking date.</p>
 			}
 
-			@if (calendarSelectionError) {
-				<p class="error">{{ calendarSelectionError }}</p>
-			}
-
-			@if (hasAvailabilityConflict) {
-				<p class="error">Selected dates overlap with an existing booking for this motorcycle. Please choose a different date range.</p>
-			}
-
-			<div class="calendar-card" aria-label="Motorcycle booking availability calendar">
-				<div class="calendar-head">
-					<h3>Availability Calendar</h3>
-					<p>Booked dates are blocked for <strong>{{ selectedMotorcycle.name }}</strong>.</p>
-				</div>
-
-				@if (isAvailabilityLoading) {
-					<p class="calendar-hint">Loading booked dates...</p>
-				} @else {
-					<div class="calendar-legend" role="list" aria-label="Calendar legend">
-						<span role="listitem"><i class="dot booked"></i> Booked</span>
-						<span role="listitem"><i class="dot selected"></i> Your selection</span>
-						<span role="listitem"><i class="dot available"></i> Available</span>
-					</div>
-
-					<div class="calendar-months">
-						@for (month of calendarMonths; track month.key) {
-							<div class="calendar-month">
-								<h4>{{ month.label }}</h4>
-								<div class="weekdays">
-									@for (label of weekdayLabels; track label) {
-										<span>{{ label }}</span>
-									}
-								</div>
-								<div class="days-grid">
-									@for (day of month.days; track day.iso) {
-										<button class="day"
-											type="button"
-											(click)="onCalendarDayClick(day)"
-											[disabled]="!day.isSelectable"
-											[class.current]="day.isCurrentMonth"
-											[class.booked]="day.isBooked"
-											[class.past]="day.isPast"
-											[class.in-range]="day.isInSelectionRange"
-											[class.selection-edge]="day.isSelectionStart || day.isSelectionEnd">
-											{{ day.day }}
-										</button>
-									}
-								</div>
-							</div>
-						}
-					</div>
-				}
-			</div>
+			<app-availability-calendar
+				[unitName]="selectedMotorcycle.name"
+				[selectedRangeLabel]="selectedDateRangeLabel"
+				[showClearButton]="!!(bookingStartDate || bookingReturnDate)"
+				[isLoading]="isAvailabilityLoading"
+				[selectionError]="calendarSelectionError"
+				[conflictError]="hasAvailabilityConflict ? 'Selected dates overlap with an existing booking for this motorcycle. Please choose a different date range.' : ''"
+				[calendarMonths]="calendarMonths"
+				(daySelected)="onCalendarDayClick($event)"
+				(clearSelection)="resetCalendarSelection()">
+			</app-availability-calendar>
 
 			<div class="summary" [class.disabled]="totalDays === 0 || hasDateError || hasAvailabilityConflict">
 				<p><span>Selected unit:</span> <strong>{{ selectedMotorcycle.name }}</strong></p>
