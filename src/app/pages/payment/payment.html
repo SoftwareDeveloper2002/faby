@@ -20,7 +20,18 @@
       <button type="button" [class.active]="selectedMethod === 'bank'" (click)="selectedMethod = 'bank'">
         Bank Transfer
       </button>
+      <button type="button" [class.active]="selectedMethod === 'qrph'" (click)="selectedMethod = 'qrph'">
+        QRPh
+      </button>
     </div>
+
+    @if (selectedMethod === 'qrph') {
+      <div class="bank-picker">
+        <p class="method-note">
+          You will be redirected to PayMongo checkout where you can pay using a QRPh-supported QR payment flow.
+        </p>
+      </div>
+    }
 
     @if (selectedMethod === 'ewallet') {
       <div class="bank-picker">

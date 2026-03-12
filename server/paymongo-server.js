@@ -62,6 +62,8 @@ app.post('/api/paymongo/checkout-session', async (req, res) => {
       ? ['paymaya']
       : method === 'grab_pay'
       ? ['grab_pay']
+      : method === 'qrph'
+      ? ['qrph']
       : method === 'bank'
       ? ['dob']
       : [];
