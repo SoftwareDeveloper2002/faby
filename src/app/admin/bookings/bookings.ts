@@ -37,6 +37,7 @@ type BookingRecord = {
 };
 
 type BookingFormModel = {
+  email: string;
   motorcycleName: string;
   bookingType: string;
   startDate: string;
@@ -66,6 +67,7 @@ export class Bookings implements OnInit {
   isEditModalOpen = false;
   editingBookingId = '';
   editForm: BookingFormModel = {
+    email: '',
     motorcycleName: '',
     bookingType: 'motorcycle',
     startDate: '',
@@ -109,12 +111,17 @@ export class Bookings implements OnInit {
     }, { paid: 0, notPaid: 0, cancelled: 0 });
   }
 
+  get uniqueEmails(): string[] {
+    return [...new Set(this.bookings.map((booking) => booking.email.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  }
+
   openEditModal(booking: BookingRecord): void {
     this.errorMessage = '';
     this.successMessage = '';
     this.isEditModalOpen = true;
     this.editingBookingId = booking.id;
     this.editForm = {
+      email: booking.email,
       motorcycleName: booking.motorcycleName,
       bookingType: booking.bookingType,
       startDate: booking.startDate,
@@ -139,6 +146,11 @@ export class Bookings implements OnInit {
 
     if (!this.editForm.motorcycleName.trim()) {
       this.errorMessage = 'Product name is required.';
+      return;
+    }
+
+    if (!this.editForm.email.trim()) {
+      this.errorMessage = 'User email is required.';
       return;
     }
 
@@ -170,6 +182,7 @@ export class Bookings implements OnInit {
         : this.editForm.paymentMethod || 'cash';
 
       const payload = {
+        email: this.editForm.email.trim(),
         motorcycleName: this.editForm.motorcycleName.trim(),
         bookingType: this.editForm.bookingType.trim().toLowerCase(),
         startDate: this.editForm.startDate,
