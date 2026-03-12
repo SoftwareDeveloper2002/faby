@@ -53,6 +53,7 @@ type CalendarDay = {
   isCurrentMonth: boolean;
   isPast: boolean;
   isBooked: boolean;
+  isSelectable: boolean;
   isSelectionStart: boolean;
   isSelectionEnd: boolean;
   isInSelectionRange: boolean;
@@ -83,6 +84,7 @@ export class Motorcyclelist implements OnInit {
   selectedMotorcycleId = this.motorcycles[0].id;
   bookingStartDate = '';
   bookingReturnDate = '';
+  calendarSelectionError = '';
   readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly todayIso = this.toIsoDate(new Date());
 
@@ -137,6 +139,18 @@ export class Motorcyclelist implements OnInit {
     }
 
     return this.selectedMotorcycleBookings.some((range) => this.doRangesOverlap(selectedRange, range));
+  }
+
+  get selectedDateRangeLabel(): string {
+    if (!this.bookingStartDate && !this.bookingReturnDate) {
+      return 'Pick your start and return dates from the calendar below.';
+    }
+
+    if (this.bookingStartDate && !this.bookingReturnDate) {
+      return `Start date selected: ${this.bookingStartDate}. Choose your return date.`;
+    }
+
+    return `${this.bookingStartDate} to ${this.bookingReturnDate}`;
   }
 
   get canProceedBooking(): boolean {
@@ -217,10 +231,44 @@ export class Motorcyclelist implements OnInit {
   }
 
   onSelectedMotorcycleChange(): void {
+    this.calendarSelectionError = '';
     if (this.hasAvailabilityConflict) {
       this.bookingStartDate = '';
       this.bookingReturnDate = '';
     }
+  }
+
+  onCalendarDayClick(day: CalendarDay): void {
+    if (!day.isSelectable) {
+      return;
+    }
+
+    this.calendarSelectionError = '';
+
+    if (!this.bookingStartDate || (this.bookingStartDate && this.bookingReturnDate)) {
+      this.bookingStartDate = day.iso;
+      this.bookingReturnDate = '';
+      return;
+    }
+
+    if (day.iso < this.bookingStartDate) {
+      this.bookingStartDate = day.iso;
+      this.bookingReturnDate = '';
+      return;
+    }
+
+    if (this.hasBookedDateBetween(this.bookingStartDate, day.iso)) {
+      this.calendarSelectionError = 'That range includes already booked dates. Choose an earlier return date or start over.';
+      return;
+    }
+
+    this.bookingReturnDate = day.iso;
+  }
+
+  resetCalendarSelection(): void {
+    this.bookingStartDate = '';
+    this.bookingReturnDate = '';
+    this.calendarSelectionError = '';
   }
 
   private buildCalendarMonth(monthDate: Date): CalendarMonth {
@@ -243,8 +291,8 @@ export class Motorcyclelist implements OnInit {
       const normalizedCurrent = this.parseIsoDate(iso);
       const dayDate = normalizedCurrent ?? new Date(current);
       const isPast = iso < this.todayIso;
-
       const isBooked = this.selectedMotorcycleBookings.some((range) => dayDate >= range.start && dayDate <= range.end);
+      const isSelectable = !isPast && !isBooked && dayDate.getMonth() === month;
       const isSelectionStart = this.bookingStartDate === iso;
       const isSelectionEnd = this.bookingReturnDate === iso;
       const isInSelectionRange = selectedRange ? dayDate >= selectedRange.start && dayDate <= selectedRange.end : false;
@@ -255,6 +303,7 @@ export class Motorcyclelist implements OnInit {
         isCurrentMonth: dayDate.getMonth() === month,
         isPast,
         isBooked,
+        isSelectable,
         isSelectionStart,
         isSelectionEnd,
         isInSelectionRange,
@@ -285,6 +334,17 @@ export class Motorcyclelist implements OnInit {
 
   private doRangesOverlap(a: BookingRange, b: BookingRange): boolean {
     return a.start <= b.end && a.end >= b.start;
+  }
+
+  private hasBookedDateBetween(startIso: string, endIso: string): boolean {
+    const start = this.parseIsoDate(startIso);
+    const end = this.parseIsoDate(endIso);
+
+    if (!start || !end || end < start) {
+      return true;
+    }
+
+    return this.selectedMotorcycleBookings.some((range) => this.doRangesOverlap({ start, end }, range));
   }
 
   private toBookingRange(payment: SuccessfulPaymentRecord): BookingRange | null {

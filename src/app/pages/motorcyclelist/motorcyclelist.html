@@ -27,20 +27,19 @@
 				</select>
 			</div>
 
-			<div class="date-grid">
-				<div class="field-group">
-					<label for="startDate">Starting booking date</label>
-					<input id="startDate" name="startDate" type="date" [min]="todayIso" [(ngModel)]="bookingStartDate">
-				</div>
-
-				<div class="field-group">
-					<label for="returnDate">Returning date</label>
-					<input id="returnDate" name="returnDate" type="date" [min]="bookingStartDate || todayIso" [(ngModel)]="bookingReturnDate">
-				</div>
+			<div class="selected-range" aria-live="polite">
+				<p class="selected-range-copy">{{ selectedDateRangeLabel }}</p>
+				@if (bookingStartDate || bookingReturnDate) {
+					<button class="clear-selection-btn" type="button" (click)="resetCalendarSelection()">Clear dates</button>
+				}
 			</div>
 
 			@if (hasDateError) {
 				<p class="error">Returning date must be the same or later than the starting booking date.</p>
+			}
+
+			@if (calendarSelectionError) {
+				<p class="error">{{ calendarSelectionError }}</p>
 			}
 
 			@if (hasAvailabilityConflict) {
@@ -73,14 +72,17 @@
 								</div>
 								<div class="days-grid">
 									@for (day of month.days; track day.iso) {
-										<span class="day"
+										<button class="day"
+											type="button"
+											(click)="onCalendarDayClick(day)"
+											[disabled]="!day.isSelectable"
 											[class.current]="day.isCurrentMonth"
 											[class.booked]="day.isBooked"
 											[class.past]="day.isPast"
 											[class.in-range]="day.isInSelectionRange"
 											[class.selection-edge]="day.isSelectionStart || day.isSelectionEnd">
 											{{ day.day }}
-										</span>
+										</button>
 									}
 								</div>
 							</div>
@@ -113,7 +115,7 @@
 			<ul class="motorcycle-list">
 				@for (motorcycle of motorcycles; track motorcycle.id) {
 					<li [class.active]="selectedMotorcycleId === motorcycle.id">
-						<button type="button" (click)="selectedMotorcycleId = motorcycle.id">
+						<button type="button" (click)="selectedMotorcycleId = motorcycle.id; onSelectedMotorcycleChange()">
 							<img class="motorcycle-image" [src]="motorcycle.imageUrl || '/faby.png'" [alt]="motorcycle.name + ' image'">
 							<span class="motorcycle-name">{{ motorcycle.name }}</span>
 							<span class="motorcycle-rate">PHP {{ motorcycle.dailyRate }} / day</span>

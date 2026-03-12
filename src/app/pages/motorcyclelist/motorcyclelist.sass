@@ -127,6 +127,37 @@ h1
 	gap: .45rem
 	margin-bottom: .95rem
 
+.selected-range
+	display: flex
+	align-items: center
+	justify-content: space-between
+	gap: .7rem
+	margin-bottom: .95rem
+	padding: .68rem .78rem
+	border-radius: .66rem
+	border: 1px solid var(--line)
+	background: #fff
+
+.selected-range-copy
+	margin: 0
+	font-size: .9rem
+	color: var(--ink-soft)
+
+.clear-selection-btn
+	border: 1px solid var(--line)
+	border-radius: .52rem
+	background: #fff9f0
+	color: var(--ink)
+	font-size: .8rem
+	font-weight: 700
+	padding: .38rem .55rem
+	cursor: pointer
+	transition: border-color .2s ease, background-color .2s ease
+
+.clear-selection-btn:hover
+	border-color: var(--accent)
+	background: #fff2de
+
 label
 	font-size: .9rem
 	font-weight: 600
@@ -236,6 +267,7 @@ select:focus, input:focus
 
 .day
 	height: 1.72rem
+	border: none
 	border-radius: .45rem
 	display: grid
 	place-items: center
@@ -243,6 +275,15 @@ select:focus, input:focus
 	font-weight: 600
 	color: #aa8d6a
 	background: #f6efe2
+	cursor: pointer
+	transition: transform .18s ease, box-shadow .18s ease, background-color .2s ease
+
+.day:hover:not(:disabled)
+	transform: translateY(-1px)
+	box-shadow: 0 4px 8px rgba(77, 53, 32, .12)
+
+.day:disabled
+	cursor: not-allowed
 
 .day.current
 	color: var(--ink)
@@ -263,6 +304,7 @@ select:focus, input:focus
 	background: #2c8b56
 	color: #fff
 	font-weight: 700
+	box-shadow: 0 0 0 1px color-mix(in srgb, #2c8b56 70%, #fff)
 
 .error
 	margin: 0 0 .8rem
@@ -343,6 +385,10 @@ select:focus, input:focus
 
 	.motorcycle-list
 		grid-template-columns: repeat(2, minmax(0, 1fr))
+
+	.selected-range
+		flex-direction: column
+		align-items: flex-start
 
 	.calendar-months
 		grid-template-columns: 1fr
