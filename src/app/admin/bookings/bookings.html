@@ -1,0 +1,165 @@
+<app-admin-navbar></app-admin-navbar>
+
+<main class="admin-bookings" aria-labelledby="bookings-title">
+	<section class="hero">
+		<p class="eyebrow">Admin Bookings</p>
+		<h1 id="bookings-title">Manage All Bookings</h1>
+		<p class="hero-copy">Review rentals, edit booking details, cancel bookings, and update payment as cash or not paid.</p>
+	</section>
+
+	@if (errorMessage) {
+		<p class="alert error">{{ errorMessage }}</p>
+	}
+
+	@if (successMessage) {
+		<p class="alert success">{{ successMessage }}</p>
+	}
+
+	<section class="summary-grid" aria-label="Booking status summary">
+		<article class="summary-card">
+			<p class="label">Paid</p>
+			<p class="value">{{ statusSummary.paid }}</p>
+		</article>
+		<article class="summary-card">
+			<p class="label">Not Paid</p>
+			<p class="value">{{ statusSummary.notPaid }}</p>
+		</article>
+		<article class="summary-card">
+			<p class="label">Cancelled</p>
+			<p class="value">{{ statusSummary.cancelled }}</p>
+		</article>
+	</section>
+
+	<section class="toolbar" aria-label="Booking search and filters">
+		<label for="search">Search</label>
+		<input
+			id="search"
+			type="search"
+			[(ngModel)]="searchTerm"
+			placeholder="Search by product, email, type, or payment status"
+		/>
+	</section>
+
+	@if (isLoading) {
+		<section class="loading-state">
+			<p>Loading bookings...</p>
+		</section>
+	} @else if (filteredBookings.length === 0) {
+		<section class="empty-state">
+			<p>No bookings found for your current search.</p>
+		</section>
+	} @else {
+		<section class="table-wrap" aria-label="Bookings table">
+			<table>
+				<thead>
+					<tr>
+						<th>Product</th>
+						<th>Type</th>
+						<th>Date Range</th>
+						<th>Amount</th>
+						<th>Payment</th>
+						<th>Status</th>
+						<th>Email</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (booking of filteredBookings; track booking.id) {
+						<tr>
+							<td>{{ booking.motorcycleName }}</td>
+							<td>{{ getBookingTypeLabel(booking.bookingType) }}</td>
+							<td>{{ booking.startDate }} to {{ booking.returnDate }}</td>
+							<td>PHP {{ booking.totalAmount }}</td>
+							<td>{{ booking.paymentMethod || 'cash' }}</td>
+							<td>
+								<span class="status-pill" [class]="getPaymentBadgeClass(booking.paymentStatus)">
+									{{ getBookingTypeLabel(booking.paymentStatus) }}
+								</span>
+							</td>
+							<td>{{ booking.email || 'N/A' }}</td>
+							<td>
+								<div class="actions">
+									<button type="button" class="btn-secondary" (click)="openEditModal(booking)">Edit</button>
+									<button type="button" class="btn-danger" (click)="cancelBooking(booking)" [disabled]="isSaving || booking.paymentStatus === 'cancelled'">
+										Cancel
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</section>
+	}
+
+	@if (isEditModalOpen) {
+		<div class="modal-backdrop" (click)="closeEditModal()"></div>
+		<section class="modal" aria-label="Edit booking" role="dialog" aria-modal="true">
+			<h2>Edit Booking</h2>
+
+			<label>
+				Product Name
+				<input type="text" [(ngModel)]="editForm.motorcycleName" />
+			</label>
+
+			<div class="modal-grid">
+				<label>
+					Booking Type
+					<select [(ngModel)]="editForm.bookingType">
+						<option value="motorcycle">Motorcycle</option>
+						<option value="room">Room</option>
+						<option value="tent">Tent</option>
+						<option value="table_chair">Table & Chair</option>
+					</select>
+				</label>
+
+				<label>
+					Payment Method
+					<select [(ngModel)]="editForm.paymentMethod">
+						<option value="cash">Cash</option>
+						<option value="gcash">GCash</option>
+						<option value="bank">Bank</option>
+					</select>
+				</label>
+
+				<label>
+					Payment Status
+					<select [(ngModel)]="editForm.paymentStatus">
+						<option value="paid">Paid</option>
+						<option value="not_paid">Not Paid</option>
+						<option value="cancelled">Cancelled</option>
+					</select>
+				</label>
+
+				<label>
+					Bank
+					<input type="text" [(ngModel)]="editForm.bank" placeholder="bpi, bdo, unionbank" />
+				</label>
+			</div>
+
+			<div class="modal-grid">
+				<label>
+					Start Date
+					<input type="date" [(ngModel)]="editForm.startDate" />
+				</label>
+				<label>
+					Return Date
+					<input type="date" [(ngModel)]="editForm.returnDate" />
+				</label>
+				<label>
+					Total Days
+					<input type="number" min="0" [(ngModel)]="editForm.totalDays" />
+				</label>
+				<label>
+					Total Amount
+					<input type="number" min="0" [(ngModel)]="editForm.totalAmount" />
+				</label>
+			</div>
+
+			<div class="modal-actions">
+				<button type="button" class="btn-secondary" (click)="closeEditModal()">Close</button>
+				<button type="button" class="btn-primary" (click)="saveBookingUpdates()" [disabled]="isSaving">Save Updates</button>
+			</div>
+		</section>
+	}
+</main>

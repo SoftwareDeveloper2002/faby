@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Dasboard } from './admin/dasboard/dasboard';
+import { Bookings } from './admin/bookings/bookings';
 import { Login as AdminLogin } from './admin/login/login';
 import { Products } from './admin/products/products';
 import { Settings } from './admin/settings/settings';
@@ -32,6 +33,7 @@ export const routes: Routes = [
   { path: 'login', component: Login, title: 'Faby | Login' },
   { path: 'admin/login', component: AdminLogin, title: 'Monting Balay | Admin Login' },
   { path: 'admin/dashboard', component: Dasboard, title: 'Monting Balay | Admin Dashboard' },
+  { path: 'admin/bookings', component: Bookings, title: 'Monting Balay | Admin Bookings' },
   { path: 'admin/products', component: Products, title: 'Monting Balay | Admin Products' },
   { path: 'admin/settings', component: Settings, title: 'Monting Balay | Admin Settings' },
   { path: 'maintenance', component: Maintenance, title: 'Faby | Coming Soon' },

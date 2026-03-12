@@ -1,0 +1,233 @@
+:host
+	display: block
+	min-height: 100dvh
+
+.admin-bookings
+	--bg-1: #f9f1e4
+	--bg-2: #ecd9bc
+	--panel: #fff9f2
+	--line: #dbbf9c
+	--ink: #2f2114
+	--ink-soft: #6d563a
+	--accent: #995d2d
+	min-height: 100dvh
+	padding: 1.1rem
+	background: linear-gradient(155deg, var(--bg-1), var(--bg-2))
+	color: var(--ink)
+
+.hero
+	max-width: 72rem
+	margin: 0 auto 1rem
+
+.eyebrow
+	margin: 0 0 .35rem
+	font-size: .8rem
+	font-weight: 800
+	letter-spacing: .14em
+	text-transform: uppercase
+	color: var(--accent)
+
+h1
+	margin: 0
+	font-size: clamp(1.5rem, 3vw, 2.1rem)
+
+.hero-copy
+	margin: .55rem 0 0
+	color: var(--ink-soft)
+
+.alert
+	max-width: 72rem
+	margin: 0 auto .8rem
+	padding: .62rem .72rem
+	border-radius: .58rem
+	font-size: .9rem
+
+.alert.error
+	background: #fff1f1
+	border: 1px solid #efb7b7
+	color: #8f2d2d
+
+.alert.success
+	background: #ecfff1
+	border: 1px solid #9adab0
+	color: #1f6c3a
+
+.summary-grid
+	max-width: 72rem
+	margin: 0 auto .9rem
+	display: grid
+	grid-template-columns: repeat(3, minmax(0, 1fr))
+	gap: .75rem
+
+.summary-card
+	padding: .75rem .8rem
+	border: 1px solid var(--line)
+	border-radius: .72rem
+	background: color-mix(in srgb, var(--panel) 88%, white)
+
+.summary-card .label
+	margin: 0
+	font-size: .82rem
+	font-weight: 700
+	color: var(--ink-soft)
+
+.summary-card .value
+	margin: .28rem 0 0
+	font-size: 1.35rem
+	font-weight: 800
+
+.toolbar
+	max-width: 72rem
+	margin: 0 auto .9rem
+	display: grid
+	gap: .38rem
+
+.toolbar label
+	font-size: .84rem
+	font-weight: 700
+
+.toolbar input
+	padding: .62rem .72rem
+	border-radius: .58rem
+	border: 1px solid var(--line)
+	font-size: .92rem
+
+.loading-state, .empty-state
+	max-width: 72rem
+	margin: 0 auto
+	padding: 1rem
+	border: 1px dashed var(--line)
+	border-radius: .72rem
+	background: #fff
+
+.table-wrap
+	max-width: 72rem
+	margin: 0 auto
+	overflow-x: auto
+	border: 1px solid var(--line)
+	border-radius: .72rem
+	background: #fff
+
+table
+	width: 100%
+	border-collapse: collapse
+	min-width: 58rem
+
+th, td
+	padding: .7rem .65rem
+	border-bottom: 1px solid #efe1cb
+	text-align: left
+	font-size: .86rem
+	vertical-align: top
+
+th
+	font-size: .78rem
+	font-weight: 800
+	letter-spacing: .05em
+	text-transform: uppercase
+	color: var(--ink-soft)
+	background: #fff8ee
+
+.actions
+	display: flex
+	gap: .45rem
+
+.btn-primary, .btn-secondary, .btn-danger
+	border: none
+	border-radius: .54rem
+	padding: .46rem .64rem
+	font-size: .8rem
+	font-weight: 700
+	cursor: pointer
+
+.btn-primary
+	background: linear-gradient(135deg, #a46433, #874a21)
+	color: #fff
+
+.btn-secondary
+	background: #f3e5d2
+	color: #6f4a2f
+
+.btn-danger
+	background: #fbe2e2
+	color: #8e2f2f
+
+.btn-danger:disabled
+	opacity: .6
+	cursor: not-allowed
+
+.status-pill
+	display: inline-block
+	padding: .2rem .46rem
+	border-radius: 999px
+	font-size: .74rem
+	font-weight: 800
+	text-transform: uppercase
+	letter-spacing: .04em
+
+.status-pill.paid
+	background: #ddf6e5
+	color: #1f6c3a
+
+.status-pill.not-paid
+	background: #fff1d8
+	color: #8d5a20
+
+.status-pill.cancelled
+	background: #fde1e1
+	color: #8f2d2d
+
+.modal-backdrop
+	position: fixed
+	inset: 0
+	background: rgba(28, 20, 12, .42)
+	z-index: 39
+
+.modal
+	position: fixed
+	left: 50%
+	top: 50%
+	transform: translate(-50%, -50%)
+	width: min(46rem, calc(100vw - 2rem))
+	max-height: calc(100vh - 2rem)
+	overflow: auto
+	border: 1px solid var(--line)
+	border-radius: .8rem
+	background: #fffdf8
+	padding: .95rem
+	z-index: 40
+	box-shadow: 0 20px 36px rgba(77, 53, 32, .18)
+
+.modal h2
+	margin: 0 0 .8rem
+
+.modal label
+	display: grid
+	gap: .33rem
+	margin-bottom: .72rem
+	font-size: .84rem
+	font-weight: 700
+
+.modal input, .modal select
+	padding: .55rem .65rem
+	border-radius: .52rem
+	border: 1px solid var(--line)
+	font-size: .9rem
+
+.modal-grid
+	display: grid
+	grid-template-columns: 1fr 1fr
+	gap: .7rem
+
+.modal-actions
+	display: flex
+	justify-content: flex-end
+	gap: .52rem
+	margin-top: .2rem
+
+@media (max-width: 920px)
+	.summary-grid
+		grid-template-columns: 1fr
+
+	.modal-grid
+		grid-template-columns: 1fr

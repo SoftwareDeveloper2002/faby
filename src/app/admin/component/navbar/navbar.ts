@@ -16,6 +16,7 @@ type AdminNavItem = {
 export class Navbar {
   readonly navItems: AdminNavItem[] = [
     { label: 'Dashboard', path: '/admin/dashboard' },
+    { label: 'Bookings', path: '/admin/bookings' },
     { label: 'Products', path: '/admin/products' },
     { label: 'Settings', path: '/admin/settings' },
   ];
