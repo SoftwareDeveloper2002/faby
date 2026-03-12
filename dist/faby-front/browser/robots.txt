@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://faby-front.web.app/sitemap.xml
