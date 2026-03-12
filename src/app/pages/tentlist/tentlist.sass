@@ -156,6 +156,37 @@ li
 	font-size: .9rem
 	color: var(--ink)
 
+.selected-range
+	display: flex
+	align-items: center
+	justify-content: space-between
+	gap: .7rem
+	margin-top: .85rem
+	padding: .68rem .78rem
+	border-radius: .66rem
+	border: 1px solid var(--line)
+	background: #fff
+
+.selected-range-copy
+	margin: 0
+	font-size: .9rem
+	color: var(--ink-soft)
+
+.clear-selection-btn
+	border: 1px solid var(--line)
+	border-radius: .52rem
+	background: #fff9f0
+	color: var(--ink)
+	font-size: .8rem
+	font-weight: 700
+	padding: .38rem .55rem
+	cursor: pointer
+	transition: border-color .2s ease, background-color .2s ease
+
+.clear-selection-btn:hover
+	border-color: var(--accent)
+	background: #fff2de
+
 .booking-form select,
 .booking-form input
 	width: 100%
@@ -176,6 +207,130 @@ li
 	display: grid
 	gap: .75rem
 	grid-template-columns: repeat(2, minmax(0, 1fr))
+
+.calendar-card
+	margin-top: .85rem
+	padding: .9rem
+	border: 1px solid var(--line)
+	border-radius: .8rem
+	background: linear-gradient(180deg, #fffdf8, #fff7eb)
+
+.calendar-head h3
+	margin: 0
+	font-size: 1.02rem
+
+.calendar-head p
+	margin: .35rem 0 0
+	font-size: .86rem
+	color: var(--ink-soft)
+
+.calendar-hint
+	margin: .7rem 0 0
+	font-size: .86rem
+	color: var(--ink-soft)
+
+.calendar-legend
+	margin-top: .72rem
+	display: flex
+	flex-wrap: wrap
+	gap: .45rem .9rem
+	font-size: .78rem
+	color: var(--ink-soft)
+
+.calendar-legend span
+	display: inline-flex
+	align-items: center
+	gap: .35rem
+
+.dot
+	width: .62rem
+	height: .62rem
+	border-radius: 999px
+	display: inline-block
+
+.dot.booked
+	background: #dc4a3a
+
+.dot.selected
+	background: #2c8b56
+
+.dot.available
+	background: #d8bc99
+
+.calendar-months
+	margin-top: .72rem
+	display: grid
+	grid-template-columns: 1fr 1fr
+	gap: .72rem
+
+.calendar-month
+	padding: .68rem
+	border: 1px solid color-mix(in srgb, var(--line) 80%, #fff)
+	border-radius: .68rem
+	background: #fff
+
+.calendar-month h4
+	margin: 0 0 .55rem
+	font-size: .88rem
+	color: var(--ink)
+
+.weekdays
+	display: grid
+	grid-template-columns: repeat(7, minmax(0, 1fr))
+	gap: .2rem
+	margin-bottom: .2rem
+
+.weekdays span
+	font-size: .68rem
+	font-weight: 700
+	text-align: center
+	color: var(--ink-soft)
+
+.days-grid
+	display: grid
+	grid-template-columns: repeat(7, minmax(0, 1fr))
+	gap: .2rem
+
+.day
+	height: 1.72rem
+	border: none
+	border-radius: .45rem
+	display: grid
+	place-items: center
+	font-size: .72rem
+	font-weight: 600
+	color: #aa8d6a
+	background: #f6efe2
+	cursor: pointer
+	transition: transform .18s ease, box-shadow .18s ease, background-color .2s ease
+
+.day:hover:not(:disabled)
+	transform: translateY(-1px)
+	box-shadow: 0 4px 8px rgba(77, 53, 32, .12)
+
+.day:disabled
+	cursor: not-allowed
+
+.day.current
+	color: var(--ink)
+
+.day.past
+	opacity: .42
+
+.day.booked
+	background: color-mix(in srgb, #dc4a3a 16%, #fff)
+	color: #84271f
+	text-decoration: line-through
+
+.day.in-range
+	background: color-mix(in srgb, #2c8b56 18%, #fff)
+	color: #1f5d3b
+
+.day.selection-edge
+	background: #2c8b56
+	color: #fff
+	font-weight: 700
+	box-shadow: 0 0 0 1px color-mix(in srgb, #2c8b56 70%, #fff)
 
 .booking-error
 	margin: .7rem 0
@@ -223,6 +378,10 @@ li
 	color: #fff
 	cursor: pointer
 
+.book-now:disabled
+	opacity: .55
+	cursor: not-allowed
+
 .book-now:focus-visible
 	outline: 2px solid #f3d3af
 	outline-offset: 2px
@@ -233,3 +392,10 @@ li
 
 	.date-grid
 		grid-template-columns: 1fr
+
+	.calendar-months
+		grid-template-columns: 1fr
+
+	.selected-range
+		flex-direction: column
+		align-items: flex-start

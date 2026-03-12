@@ -47,7 +47,7 @@
     <div class="booking-form">
       <label>
         Tent Unit
-        <select [(ngModel)]="selectedTentId" (ngModelChange)="bookingError = ''">
+        <select [(ngModel)]="selectedTentId" (ngModelChange)="onSelectedTentChange()">
           <option value="" disabled>Select a tent</option>
           @for (tent of tents; track tent.id) {
             <option [value]="tent.id">{{ tent.name }} - PHP {{ tent.ratePerDay }}/day</option>
@@ -55,21 +55,65 @@
         </select>
       </label>
 
-      <div class="date-grid">
-        <label>
-          Booking Date
-          <input type="date" [(ngModel)]="startDate" (ngModelChange)="bookingError = ''" />
-        </label>
+      <div class="selected-range" aria-live="polite">
+        <p class="selected-range-copy">{{ selectedDateRangeLabel }}</p>
+        @if (startDate || returnDate) {
+          <button class="clear-selection-btn" type="button" (click)="resetCalendarSelection()">Clear dates</button>
+        }
+      </div>
 
-        <label>
-          Return Date
-          <input type="date" [(ngModel)]="returnDate" (ngModelChange)="bookingError = ''" />
-        </label>
+      <div class="calendar-card" aria-label="Tent booking availability calendar">
+        <div class="calendar-head">
+          <h3>Availability Calendar</h3>
+          <p>Booked dates are blocked for <strong>{{ selectedTent?.name || 'selected tent' }}</strong>.</p>
+        </div>
+
+        @if (isAvailabilityLoading) {
+          <p class="calendar-hint">Loading booked dates...</p>
+        } @else {
+          <div class="calendar-legend" role="list" aria-label="Calendar legend">
+            <span role="listitem"><i class="dot booked"></i> Booked</span>
+            <span role="listitem"><i class="dot selected"></i> Your selection</span>
+            <span role="listitem"><i class="dot available"></i> Available</span>
+          </div>
+
+          <div class="calendar-months">
+            @for (month of calendarMonths; track month.key) {
+              <div class="calendar-month">
+                <h4>{{ month.label }}</h4>
+                <div class="weekdays">
+                  @for (label of weekdayLabels; track label) {
+                    <span>{{ label }}</span>
+                  }
+                </div>
+                <div class="days-grid">
+                  @for (day of month.days; track day.iso) {
+                    <button class="day"
+                      type="button"
+                      (click)="onCalendarDayClick(day)"
+                      [disabled]="!day.isSelectable"
+                      [class.current]="day.isCurrentMonth"
+                      [class.booked]="day.isBooked"
+                      [class.past]="day.isPast"
+                      [class.in-range]="day.isInSelectionRange"
+                      [class.selection-edge]="day.isSelectionStart || day.isSelectionEnd">
+                      {{ day.day }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
 
     @if (bookingError) {
       <p class="booking-error">{{ bookingError }}</p>
+    }
+
+    @if (hasAvailabilityConflict) {
+      <p class="booking-error">Selected dates overlap with an existing tent booking. Please choose a different range.</p>
     }
 
     <div class="summary" aria-live="polite">
@@ -79,6 +123,6 @@
       <p class="total"><span>Total Amount:</span> PHP {{ totalAmount }}</p>
     </div>
 
-    <button class="book-now" type="button" (click)="proceedBooking()">Book Now</button>
+    <button class="book-now" type="button" (click)="proceedBooking()" [disabled]="!canProceedBooking">Book Now</button>
   </section>
 </main>

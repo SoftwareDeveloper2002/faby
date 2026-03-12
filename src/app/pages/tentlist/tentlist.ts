@@ -37,6 +37,37 @@ type TentUnit = {
   isPopular?: boolean;
 };
 
+type SuccessfulPaymentRecord = {
+  motorcycleId?: string;
+  motorcycleName?: string;
+  startDate?: string;
+  returnDate?: string;
+  bookingType?: string;
+};
+
+type BookingRange = {
+  start: Date;
+  end: Date;
+};
+
+type CalendarDay = {
+  iso: string;
+  day: number;
+  isCurrentMonth: boolean;
+  isPast: boolean;
+  isBooked: boolean;
+  isSelectable: boolean;
+  isSelectionStart: boolean;
+  isSelectionEnd: boolean;
+  isInSelectionRange: boolean;
+};
+
+type CalendarMonth = {
+  key: string;
+  label: string;
+  days: CalendarDay[];
+};
+
 @Component({
   selector: 'app-tentlist',
   imports: [CommonModule, FormsModule],
@@ -88,11 +119,17 @@ export class Tentlist implements OnInit {
   startDate = '';
   returnDate = '';
   bookingError = '';
+  isAvailabilityLoading = true;
+  readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  readonly todayIso = this.toIsoDate(new Date());
+
+  private successfulPayments: SuccessfulPaymentRecord[] = [];
 
   constructor(private readonly router: Router) {}
 
   async ngOnInit(): Promise<void> {
     await this.loadAdminTents();
+    await this.loadSuccessfulPayments();
   }
 
   get selectedTent(): TentUnit | null {
@@ -120,8 +157,125 @@ export class Tentlist implements OnInit {
     return this.totalDays * this.selectedTent.ratePerDay;
   }
 
+  get hasDateError(): boolean {
+    if (!this.startDate || !this.returnDate) {
+      return false;
+    }
+
+    return new Date(`${this.returnDate}T00:00:00`) <= new Date(`${this.startDate}T00:00:00`);
+  }
+
+  get hasAvailabilityConflict(): boolean {
+    const selectedRange = this.getSelectedRange();
+
+    if (!selectedRange || this.selectedTentBookings.length === 0) {
+      return false;
+    }
+
+    return this.selectedTentBookings.some((range) => this.doRangesOverlap(selectedRange, range));
+  }
+
+  get selectedDateRangeLabel(): string {
+    if (!this.startDate && !this.returnDate) {
+      return 'Pick your booking and return dates from the calendar below.';
+    }
+
+    if (this.startDate && !this.returnDate) {
+      return `Booking date selected: ${this.startDate}. Choose your return date.`;
+    }
+
+    return `${this.startDate} to ${this.returnDate}`;
+  }
+
+  get calendarMonths(): CalendarMonth[] {
+    const months: CalendarMonth[] = [];
+    const baseDate = this.startDate ? this.parseIsoDate(this.startDate) : this.parseIsoDate(this.todayIso);
+    const firstMonth = baseDate ? new Date(baseDate.getFullYear(), baseDate.getMonth(), 1) : new Date();
+
+    for (let index = 0; index < 2; index += 1) {
+      const monthDate = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
+      months.push(this.buildCalendarMonth(monthDate));
+    }
+
+    return months;
+  }
+
+  get selectedTentBookings(): BookingRange[] {
+    const selected = this.selectedTent;
+    if (!selected) {
+      return [];
+    }
+
+    const selectedName = selected.name.trim().toLowerCase();
+
+    return this.successfulPayments
+      .filter((payment) => {
+        const bookingType = String(payment.bookingType || '').toLowerCase();
+        if (bookingType && bookingType !== 'tent') {
+          return false;
+        }
+
+        const paymentTentId = String(payment.motorcycleId || '').trim();
+        const paymentTentName = String(payment.motorcycleName || '').trim().toLowerCase();
+
+        if (paymentTentId && paymentTentId === selected.id) {
+          return true;
+        }
+
+        return !!paymentTentName && paymentTentName === selectedName;
+      })
+      .map((payment) => this.toBookingRange(payment))
+      .filter((range): range is BookingRange => range !== null);
+  }
+
+  get canProceedBooking(): boolean {
+    return !!this.selectedTent && this.totalDays > 0 && !this.hasDateError && !this.hasAvailabilityConflict;
+  }
+
   selectTent(tentId: string): void {
     this.selectedTentId = tentId;
+    this.onSelectedTentChange();
+  }
+
+  onSelectedTentChange(): void {
+    this.bookingError = '';
+
+    if (this.hasAvailabilityConflict) {
+      this.startDate = '';
+      this.returnDate = '';
+    }
+  }
+
+  onCalendarDayClick(day: CalendarDay): void {
+    if (!day.isSelectable || !this.selectedTentId) {
+      return;
+    }
+
+    this.bookingError = '';
+
+    if (!this.startDate || (this.startDate && this.returnDate)) {
+      this.startDate = day.iso;
+      this.returnDate = '';
+      return;
+    }
+
+    if (day.iso <= this.startDate) {
+      this.startDate = day.iso;
+      this.returnDate = '';
+      return;
+    }
+
+    if (this.hasBookedDateBetween(this.startDate, day.iso)) {
+      this.bookingError = 'That range includes already booked dates. Choose an earlier return date or start over.';
+      return;
+    }
+
+    this.returnDate = day.iso;
+  }
+
+  resetCalendarSelection(): void {
+    this.startDate = '';
+    this.returnDate = '';
     this.bookingError = '';
   }
 
@@ -138,8 +292,13 @@ export class Tentlist implements OnInit {
       return;
     }
 
-    if (this.totalDays <= 0) {
+    if (this.hasDateError || this.totalDays <= 0) {
       this.bookingError = 'Return date must be later than the booking date.';
+      return;
+    }
+
+    if (this.hasAvailabilityConflict) {
+      this.bookingError = 'Selected dates overlap with an existing tent booking.';
       return;
     }
 
@@ -225,6 +384,129 @@ export class Tentlist implements OnInit {
       this.tents = fallbackTents;
     } catch {
       this.tents = fallbackTents;
+    }
+  }
+
+  private buildCalendarMonth(monthDate: Date): CalendarMonth {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
+
+    const firstCellDate = new Date(start);
+    firstCellDate.setDate(start.getDate() - start.getDay());
+
+    const lastCellDate = new Date(end);
+    lastCellDate.setDate(end.getDate() + (6 - end.getDay()));
+
+    const days: CalendarDay[] = [];
+    const selectedRange = this.getSelectedRange();
+
+    for (const current = new Date(firstCellDate); current <= lastCellDate; current.setDate(current.getDate() + 1)) {
+      const iso = this.toIsoDate(current);
+      const normalizedCurrent = this.parseIsoDate(iso);
+      const dayDate = normalizedCurrent ?? new Date(current);
+      const isPast = iso < this.todayIso;
+      const isBooked = this.selectedTentBookings.some((range) => dayDate >= range.start && dayDate <= range.end);
+      const isSelectable = !!this.selectedTentId && !isPast && !isBooked && dayDate.getMonth() === month;
+      const isSelectionStart = this.startDate === iso;
+      const isSelectionEnd = this.returnDate === iso;
+      const isInSelectionRange = selectedRange ? dayDate >= selectedRange.start && dayDate <= selectedRange.end : false;
+
+      days.push({
+        iso,
+        day: dayDate.getDate(),
+        isCurrentMonth: dayDate.getMonth() === month,
+        isPast,
+        isBooked,
+        isSelectable,
+        isSelectionStart,
+        isSelectionEnd,
+        isInSelectionRange,
+      });
+    }
+
+    return {
+      key: `${year}-${String(month + 1).padStart(2, '0')}`,
+      label: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      days,
+    };
+  }
+
+  private getSelectedRange(): BookingRange | null {
+    if (!this.startDate || !this.returnDate || this.hasDateError) {
+      return null;
+    }
+
+    const start = this.parseIsoDate(this.startDate);
+    const end = this.parseIsoDate(this.returnDate);
+
+    if (!start || !end) {
+      return null;
+    }
+
+    return { start, end };
+  }
+
+  private doRangesOverlap(a: BookingRange, b: BookingRange): boolean {
+    return a.start <= b.end && a.end >= b.start;
+  }
+
+  private hasBookedDateBetween(startIso: string, endIso: string): boolean {
+    const start = this.parseIsoDate(startIso);
+    const end = this.parseIsoDate(endIso);
+
+    if (!start || !end || end <= start) {
+      return true;
+    }
+
+    return this.selectedTentBookings.some((range) => this.doRangesOverlap({ start, end }, range));
+  }
+
+  private toBookingRange(payment: SuccessfulPaymentRecord): BookingRange | null {
+    const start = this.parseIsoDate(String(payment.startDate || ''));
+    const end = this.parseIsoDate(String(payment.returnDate || ''));
+
+    if (!start || !end || end <= start) {
+      return null;
+    }
+
+    return { start, end };
+  }
+
+  private parseIsoDate(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return null;
+    }
+
+    const parsed = new Date(`${value}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private toIsoDate(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private async loadSuccessfulPayments(): Promise<void> {
+    this.isAvailabilityLoading = true;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const snapshot = await get(ref(db, 'successfulPayments'));
+
+      if (!snapshot.exists()) {
+        this.successfulPayments = [];
+        return;
+      }
+
+      const records = snapshot.val() as Record<string, SuccessfulPaymentRecord>;
+      this.successfulPayments = Object.values(records || {});
+    } finally {
+      this.isAvailabilityLoading = false;
     }
   }
 }
