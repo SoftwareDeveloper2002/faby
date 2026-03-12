@@ -25,6 +25,8 @@ type PaymentItem = {
   startDate: string;
   returnDate: string;
   paymentMethod: string;
+  paymentStatus?: string;
+  status?: string;
   bank: string;
   createdAt: string;
   bookingType?: string;
@@ -242,6 +244,7 @@ export class Myproducts implements OnInit {
       const rawData = snapshot.val() as Record<string, Omit<PaymentItem, 'id'>>;
       this.payments = Object.entries(rawData)
         .map(([id, value]) => ({ id, ...value }))
+        .filter((payment) => this.isPaidPayment(payment))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
       if (error && typeof error === 'object' && 'message' in error) {
@@ -252,5 +255,20 @@ export class Myproducts implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private isPaidPayment(payment: PaymentItem): boolean {
+    const paymentStatus = String(payment.paymentStatus ?? '').trim().toLowerCase();
+    if (paymentStatus) {
+      return paymentStatus === 'paid';
+    }
+
+    const bookingStatus = String(payment.status ?? '').trim().toLowerCase();
+    if (bookingStatus === 'cancelled') {
+      return false;
+    }
+
+    const method = String(payment.paymentMethod ?? '').trim().toLowerCase();
+    return method !== 'cash';
   }
 }
