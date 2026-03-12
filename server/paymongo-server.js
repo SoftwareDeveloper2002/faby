@@ -54,7 +54,17 @@ app.post('/api/paymongo/checkout-session', async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount.' });
     }
 
-    const paymentMethodTypes = method === 'gcash' ? ['gcash'] : method === 'bank' ? ['dob'] : [];
+    const paymentMethodTypes = method === 'gcash'
+      ? ['gcash']
+      : method === 'maya'
+      ? ['paymaya']
+      : method === 'paymaya'
+      ? ['paymaya']
+      : method === 'grab_pay'
+      ? ['grab_pay']
+      : method === 'bank'
+      ? ['dob']
+      : [];
 
     if (paymentMethodTypes.length === 0) {
       return res.status(400).json({ message: 'Unsupported payment method for PayMongo checkout.' });

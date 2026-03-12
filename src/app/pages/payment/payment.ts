@@ -27,6 +27,7 @@ const DEFAULT_PAYMONGO_API_BASE = 'https://faby.soltryxsolutions.com';
 export class Payment {
   booking: PaymentDetails;
   selectedMethod = 'cash';
+  selectedEwallet = 'gcash';
   selectedBank = 'bpi';
   isProcessing = false;
   errorMessage = '';
@@ -34,12 +35,34 @@ export class Payment {
   isTermsModalOpen = false;
   isPrivacyModalOpen = false;
 
-  readonly bankOptions = [
+  readonly localBankOptions = [
     { code: 'bpi', label: 'BPI' },
     { code: 'unionbank', label: 'UnionBank' },
     { code: 'bdo', label: 'BDO' },
     { code: 'landbank', label: 'Landbank' },
     { code: 'metrobank', label: 'Metrobank' },
+    { code: 'pnb', label: 'PNB' },
+    { code: 'securitybank', label: 'Security Bank' },
+    { code: 'rcbc', label: 'RCBC' },
+    { code: 'chinabank', label: 'China Bank' },
+    { code: 'eastwest', label: 'EastWest' },
+    { code: 'cimb', label: 'CIMB' },
+  ];
+
+  readonly internationalBankOptions = [
+    { code: 'hsbc', label: 'HSBC' },
+    { code: 'citibank', label: 'Citibank' },
+    { code: 'standardchartered', label: 'Standard Chartered' },
+    { code: 'maybank', label: 'Maybank' },
+    { code: 'dbs', label: 'DBS' },
+    { code: 'deutschebank', label: 'Deutsche Bank' },
+  ];
+
+  readonly ewalletOptions = [
+    { code: 'gcash', label: 'GCash' },
+    { code: 'maya', label: 'Maya' },
+    { code: 'paymaya', label: 'Maya' },
+    { code: 'grab_pay', label: 'GrabPay' },
   ];
 
   readonly termsSections: LegalModalSection[] = [
@@ -114,6 +137,7 @@ export class Payment {
     this.isProcessing = true;
 
     try {
+      const checkoutMethod = this.getCheckoutMethod();
       const pendingPaymentRecord = {
         motorcycleId: this.booking.motorcycleId,
         motorcycleName: this.booking.motorcycleName,
@@ -122,7 +146,7 @@ export class Payment {
         startDate: this.booking.startDate,
         returnDate: this.booking.returnDate,
         bookingType: this.booking.bookingType,
-        paymentMethod: this.selectedMethod,
+        paymentMethod: checkoutMethod,
         bank: this.selectedMethod === 'bank' ? this.selectedBank : '',
       };
       localStorage.setItem('pendingPaymentRecord', JSON.stringify(pendingPaymentRecord));
@@ -137,10 +161,12 @@ export class Payment {
   }
 
   private async createPayMongoCheckoutUrl(): Promise<string> {
+    const checkoutMethod = this.getCheckoutMethod();
+
     const payload = {
       amount: this.booking.totalAmount,
       description: `${this.booking.motorcycleName} rental (${this.booking.totalDays} day/s)`,
-      method: this.selectedMethod,
+      method: checkoutMethod,
       bank: this.selectedMethod === 'bank' ? this.selectedBank : null,
       metadata: {
         motorcycleId: this.booking.motorcycleId,
@@ -252,6 +278,22 @@ export class Payment {
     }
 
     return 'Payment initialization failed. Please try again.';
+  }
+
+  get selectedEwalletLabel(): string {
+    return this.ewalletOptions.find((wallet) => wallet.code === this.selectedEwallet)?.label || 'your e-wallet';
+  }
+
+  private getCheckoutMethod(): string {
+    if (this.selectedMethod === 'ewallet') {
+      if (this.selectedEwallet === 'maya') {
+        return 'paymaya';
+      }
+
+      return this.selectedEwallet;
+    }
+
+    return this.selectedMethod;
   }
 
   openTermsModal(): void {

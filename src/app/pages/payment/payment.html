@@ -14,30 +14,45 @@
       <button type="button" [class.active]="selectedMethod === 'cash'" (click)="selectedMethod = 'cash'">
         Cash on Arrival
       </button>
-      <button type="button" [class.active]="selectedMethod === 'gcash'" (click)="selectedMethod = 'gcash'">
-        GCash
+      <button type="button" [class.active]="selectedMethod === 'ewallet'" (click)="selectedMethod = 'ewallet'">
+        E-Wallet
       </button>
       <button type="button" [class.active]="selectedMethod === 'bank'" (click)="selectedMethod = 'bank'">
         Bank Transfer
       </button>
     </div>
 
-    @if (selectedMethod === 'gcash') {
-      <p class="method-note">
-        You will be redirected to PayMongo secure checkout to complete payment with GCash.
-      </p>
+    @if (selectedMethod === 'ewallet') {
+      <div class="bank-picker">
+        <label for="ewalletOption">Available e-wallets (via PayMongo)</label>
+        <select id="ewalletOption" name="ewalletOption" [(ngModel)]="selectedEwallet">
+          @for (wallet of ewalletOptions; track wallet.code) {
+            <option [value]="wallet.code">{{ wallet.label }}</option>
+          }
+        </select>
+        <p class="method-note">
+          You will be redirected to PayMongo secure checkout to complete payment with {{ selectedEwalletLabel }}.
+        </p>
+      </div>
     }
 
     @if (selectedMethod === 'bank') {
       <div class="bank-picker">
         <label for="bankOption">Available banks (via PayMongo)</label>
         <select id="bankOption" name="bankOption" [(ngModel)]="selectedBank">
-          @for (bank of bankOptions; track bank.code) {
-            <option [value]="bank.code">{{ bank.label }}</option>
-          }
+          <optgroup label="Local Banks">
+            @for (bank of localBankOptions; track bank.code) {
+              <option [value]="bank.code">{{ bank.label }}</option>
+            }
+          </optgroup>
+          <optgroup label="International Banks">
+            @for (bank of internationalBankOptions; track bank.code) {
+              <option [value]="bank.code">{{ bank.label }}</option>
+            }
+          </optgroup>
         </select>
         <p class="method-note">
-          You will be redirected to PayMongo checkout to continue with your selected bank channel.
+          You will be redirected to PayMongo checkout to continue with your selected bank channel. International bank availability depends on PayMongo-supported rails.
         </p>
       </div>
     }
