@@ -33,6 +33,37 @@ type Motorcycle = {
   imageUrl?: string;
 };
 
+type SuccessfulPaymentRecord = {
+  motorcycleId?: string;
+  motorcycleName?: string;
+  startDate?: string;
+  returnDate?: string;
+  bookingType?: string;
+  status?: string;
+};
+
+type BookingRange = {
+  start: Date;
+  end: Date;
+};
+
+type CalendarDay = {
+  iso: string;
+  day: number;
+  isCurrentMonth: boolean;
+  isPast: boolean;
+  isBooked: boolean;
+  isSelectionStart: boolean;
+  isSelectionEnd: boolean;
+  isInSelectionRange: boolean;
+};
+
+type CalendarMonth = {
+  key: string;
+  label: string;
+  days: CalendarDay[];
+};
+
 @Component({
   selector: 'app-motorcyclelist',
   imports: [CommonModule, FormsModule],
@@ -47,15 +78,21 @@ export class Motorcyclelist implements OnInit {
   ];
 
   isLoading = true;
+  isAvailabilityLoading = true;
 
   selectedMotorcycleId = this.motorcycles[0].id;
   bookingStartDate = '';
   bookingReturnDate = '';
+  readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  readonly todayIso = this.toIsoDate(new Date());
+
+  private successfulPayments: SuccessfulPaymentRecord[] = [];
 
   constructor(private readonly router: Router) {}
 
   async ngOnInit(): Promise<void> {
     await this.loadAdminMotorcycles();
+    await this.loadSuccessfulPayments();
   }
 
   get selectedMotorcycle(): Motorcycle {
@@ -92,8 +129,55 @@ export class Motorcyclelist implements OnInit {
     return new Date(`${this.bookingReturnDate}T00:00:00`) < new Date(`${this.bookingStartDate}T00:00:00`);
   }
 
+  get hasAvailabilityConflict(): boolean {
+    const selectedRange = this.getSelectedRange();
+
+    if (!selectedRange || this.selectedMotorcycleBookings.length === 0) {
+      return false;
+    }
+
+    return this.selectedMotorcycleBookings.some((range) => this.doRangesOverlap(selectedRange, range));
+  }
+
   get canProceedBooking(): boolean {
-    return this.totalDays > 0 && !this.hasDateError;
+    return this.totalDays > 0 && !this.hasDateError && !this.hasAvailabilityConflict;
+  }
+
+  get calendarMonths(): CalendarMonth[] {
+    const months: CalendarMonth[] = [];
+    const baseDate = this.bookingStartDate ? this.parseIsoDate(this.bookingStartDate) : this.parseIsoDate(this.todayIso);
+    const firstMonth = baseDate ? new Date(baseDate.getFullYear(), baseDate.getMonth(), 1) : new Date();
+
+    for (let index = 0; index < 2; index += 1) {
+      const monthDate = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
+      months.push(this.buildCalendarMonth(monthDate));
+    }
+
+    return months;
+  }
+
+  get selectedMotorcycleBookings(): BookingRange[] {
+    const selected = this.selectedMotorcycle;
+    const selectedName = selected.name.trim().toLowerCase();
+
+    return this.successfulPayments
+      .filter((payment) => {
+        const bookingType = String(payment.bookingType || 'motorcycle').toLowerCase();
+        if (bookingType !== 'motorcycle') {
+          return false;
+        }
+
+        const paymentMotorcycleId = String(payment.motorcycleId || '').trim();
+        const paymentMotorcycleName = String(payment.motorcycleName || '').trim().toLowerCase();
+
+        if (paymentMotorcycleId && paymentMotorcycleId === selected.id) {
+          return true;
+        }
+
+        return !!paymentMotorcycleName && paymentMotorcycleName === selectedName;
+      })
+      .map((payment) => this.toBookingRange(payment))
+      .filter((range): range is BookingRange => range !== null);
   }
 
   proceedBooking(): void {
@@ -130,6 +214,124 @@ export class Motorcyclelist implements OnInit {
     this.router.navigate(['/booking-confirm'], {
       queryParams: bookingParams,
     });
+  }
+
+  onSelectedMotorcycleChange(): void {
+    if (this.hasAvailabilityConflict) {
+      this.bookingStartDate = '';
+      this.bookingReturnDate = '';
+    }
+  }
+
+  private buildCalendarMonth(monthDate: Date): CalendarMonth {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
+
+    const firstCellDate = new Date(start);
+    firstCellDate.setDate(start.getDate() - start.getDay());
+
+    const lastCellDate = new Date(end);
+    lastCellDate.setDate(end.getDate() + (6 - end.getDay()));
+
+    const days: CalendarDay[] = [];
+    const selectedRange = this.getSelectedRange();
+
+    for (const current = new Date(firstCellDate); current <= lastCellDate; current.setDate(current.getDate() + 1)) {
+      const iso = this.toIsoDate(current);
+      const normalizedCurrent = this.parseIsoDate(iso);
+      const dayDate = normalizedCurrent ?? new Date(current);
+      const isPast = iso < this.todayIso;
+
+      const isBooked = this.selectedMotorcycleBookings.some((range) => dayDate >= range.start && dayDate <= range.end);
+      const isSelectionStart = this.bookingStartDate === iso;
+      const isSelectionEnd = this.bookingReturnDate === iso;
+      const isInSelectionRange = selectedRange ? dayDate >= selectedRange.start && dayDate <= selectedRange.end : false;
+
+      days.push({
+        iso,
+        day: dayDate.getDate(),
+        isCurrentMonth: dayDate.getMonth() === month,
+        isPast,
+        isBooked,
+        isSelectionStart,
+        isSelectionEnd,
+        isInSelectionRange,
+      });
+    }
+
+    return {
+      key: `${year}-${String(month + 1).padStart(2, '0')}`,
+      label: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      days,
+    };
+  }
+
+  private getSelectedRange(): BookingRange | null {
+    if (!this.bookingStartDate || !this.bookingReturnDate || this.hasDateError) {
+      return null;
+    }
+
+    const start = this.parseIsoDate(this.bookingStartDate);
+    const end = this.parseIsoDate(this.bookingReturnDate);
+
+    if (!start || !end) {
+      return null;
+    }
+
+    return { start, end };
+  }
+
+  private doRangesOverlap(a: BookingRange, b: BookingRange): boolean {
+    return a.start <= b.end && a.end >= b.start;
+  }
+
+  private toBookingRange(payment: SuccessfulPaymentRecord): BookingRange | null {
+    const start = this.parseIsoDate(String(payment.startDate || ''));
+    const end = this.parseIsoDate(String(payment.returnDate || ''));
+
+    if (!start || !end || end < start) {
+      return null;
+    }
+
+    return { start, end };
+  }
+
+  private parseIsoDate(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return null;
+    }
+
+    const parsed = new Date(`${value}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private toIsoDate(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private async loadSuccessfulPayments(): Promise<void> {
+    this.isAvailabilityLoading = true;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const snapshot = await get(ref(db, 'successfulPayments'));
+
+      if (!snapshot.exists()) {
+        this.successfulPayments = [];
+        return;
+      }
+
+      const records = snapshot.val() as Record<string, SuccessfulPaymentRecord>;
+      this.successfulPayments = Object.values(records || {});
+    } finally {
+      this.isAvailabilityLoading = false;
+    }
   }
 
   private async loadAdminMotorcycles(): Promise<void> {

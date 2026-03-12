@@ -151,6 +151,119 @@ select:focus, input:focus
 	grid-template-columns: 1fr 1fr
 	gap: .7rem
 
+.calendar-card
+	margin-bottom: .95rem
+	padding: .9rem
+	border: 1px solid var(--line)
+	border-radius: .8rem
+	background: linear-gradient(180deg, #fffdf8, #fff7eb)
+
+.calendar-head h3
+	margin: 0
+	font-size: 1.02rem
+
+.calendar-head p
+	margin: .35rem 0 0
+	font-size: .86rem
+	color: var(--ink-soft)
+
+.calendar-hint
+	margin: .7rem 0 0
+	font-size: .86rem
+	color: var(--ink-soft)
+
+.calendar-legend
+	margin-top: .72rem
+	display: flex
+	flex-wrap: wrap
+	gap: .45rem .9rem
+	font-size: .78rem
+	color: var(--ink-soft)
+
+.calendar-legend span
+	display: inline-flex
+	align-items: center
+	gap: .35rem
+
+.dot
+	width: .62rem
+	height: .62rem
+	border-radius: 999px
+	display: inline-block
+
+.dot.booked
+	background: #dc4a3a
+
+.dot.selected
+	background: #2c8b56
+
+.dot.available
+	background: #d8bc99
+
+.calendar-months
+	margin-top: .72rem
+	display: grid
+	grid-template-columns: 1fr 1fr
+	gap: .72rem
+
+.calendar-month
+	padding: .68rem
+	border: 1px solid color-mix(in srgb, var(--line) 80%, #fff)
+	border-radius: .68rem
+	background: #fff
+
+.calendar-month h4
+	margin: 0 0 .55rem
+	font-size: .88rem
+	color: var(--ink)
+
+.weekdays
+	display: grid
+	grid-template-columns: repeat(7, minmax(0, 1fr))
+	gap: .2rem
+	margin-bottom: .2rem
+
+.weekdays span
+	font-size: .68rem
+	font-weight: 700
+	text-align: center
+	color: var(--ink-soft)
+
+.days-grid
+	display: grid
+	grid-template-columns: repeat(7, minmax(0, 1fr))
+	gap: .2rem
+
+.day
+	height: 1.72rem
+	border-radius: .45rem
+	display: grid
+	place-items: center
+	font-size: .72rem
+	font-weight: 600
+	color: #aa8d6a
+	background: #f6efe2
+
+.day.current
+	color: var(--ink)
+
+.day.past
+	opacity: .42
+
+.day.booked
+	background: color-mix(in srgb, #dc4a3a 16%, #fff)
+	color: #84271f
+	text-decoration: line-through
+
+.day.in-range
+	background: color-mix(in srgb, #2c8b56 18%, #fff)
+	color: #1f5d3b
+
+.day.selection-edge
+	background: #2c8b56
+	color: #fff
+	font-weight: 700
+
 .error
 	margin: 0 0 .8rem
 	padding: .58rem .68rem
@@ -230,6 +343,9 @@ select:focus, input:focus
 
 	.motorcycle-list
 		grid-template-columns: repeat(2, minmax(0, 1fr))
+
+	.calendar-months
+		grid-template-columns: 1fr
 
 	.date-grid
 		grid-template-columns: 1fr

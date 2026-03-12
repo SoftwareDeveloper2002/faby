@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 type PaymentDetails = {
+  motorcycleId: string;
   motorcycleName: string;
   totalDays: number;
   totalAmount: number;
@@ -43,6 +44,7 @@ export class Payment {
     const params = this.route.snapshot.queryParams;
 
     this.booking = {
+      motorcycleId: String(params['motorcycleId'] ?? ''),
       motorcycleName: String(params['motorcycleName'] ?? 'Motorcycle Unit'),
       totalDays: Number(params['totalDays'] ?? 0),
       totalAmount: Number(params['totalAmount'] ?? 0),
@@ -69,6 +71,7 @@ export class Payment {
 
     try {
       const pendingPaymentRecord = {
+        motorcycleId: this.booking.motorcycleId,
         motorcycleName: this.booking.motorcycleName,
         totalDays: this.booking.totalDays,
         totalAmount: this.booking.totalAmount,
@@ -96,6 +99,7 @@ export class Payment {
       method: this.selectedMethod,
       bank: this.selectedMethod === 'bank' ? this.selectedBank : null,
       metadata: {
+        motorcycleId: this.booking.motorcycleId,
         motorcycleName: this.booking.motorcycleName,
         totalDays: this.booking.totalDays,
         startDate: this.booking.startDate,

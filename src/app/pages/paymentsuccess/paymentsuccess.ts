@@ -18,11 +18,13 @@ const firebaseConfig = {
 
 type SuccessfulPaymentRecord = {
   email: string;
+  motorcycleId: string;
   motorcycleName: string;
   totalDays: number;
   totalAmount: number;
   startDate: string;
   returnDate: string;
+  bookingType: string;
   paymentMethod: string;
   bank: string;
   status: 'success';
@@ -54,11 +56,13 @@ export class Paymentsuccess implements OnInit {
 
     const record: SuccessfulPaymentRecord = {
       email: String(params['email'] ?? userEmail),
+      motorcycleId: String(params['motorcycleId'] ?? pendingPayment?.motorcycleId ?? ''),
       motorcycleName: String(params['motorcycleName'] ?? pendingPayment?.motorcycleName ?? 'Motorcycle Unit'),
       totalDays: Number(params['totalDays'] ?? pendingPayment?.totalDays ?? 0),
       totalAmount: Number(params['totalAmount'] ?? pendingPayment?.totalAmount ?? 0),
       startDate: String(params['startDate'] ?? pendingPayment?.startDate ?? ''),
       returnDate: String(params['returnDate'] ?? pendingPayment?.returnDate ?? ''),
+      bookingType: String(params['bookingType'] ?? pendingPayment?.bookingType ?? 'motorcycle'),
       paymentMethod: String(params['paymentMethod'] ?? pendingPayment?.paymentMethod ?? ''),
       bank: String(params['bank'] ?? pendingPayment?.bank ?? ''),
       status: 'success',
