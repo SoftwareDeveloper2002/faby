@@ -127,13 +127,22 @@
 
 			<label>
 				Product Name
-				<input type="text" [(ngModel)]="editForm.motorcycleName" [readonly]="!isCreateMode" />
+				@if (isCreateMode) {
+					<select [(ngModel)]="editForm.motorcycleId" (ngModelChange)="onProductSelected($event)">
+						<option value="">Select Product</option>
+						@for (product of availableProductsForForm; track product.id) {
+							<option [value]="product.id">{{ product.title }}</option>
+						}
+					</select>
+				} @else {
+					<input type="text" [(ngModel)]="editForm.motorcycleName" readonly />
+				}
 			</label>
 
 			<div class="modal-grid">
 				<label>
 					Booking Type
-					<select [(ngModel)]="editForm.bookingType" [disabled]="!isCreateMode">
+					<select [(ngModel)]="editForm.bookingType" [disabled]="!isCreateMode" (ngModelChange)="onBookingTypeChanged()">
 						<option value="motorcycle">Motorcycle</option>
 						<option value="room">Room</option>
 						<option value="tent">Tent</option>
@@ -171,19 +180,19 @@
 			<div class="modal-grid">
 				<label>
 					Start Date
-					<input type="date" [(ngModel)]="editForm.startDate" />
+					<input type="date" [(ngModel)]="editForm.startDate" (ngModelChange)="onBookingDatesChanged()" />
 				</label>
 				<label>
 					Return Date
-					<input type="date" [(ngModel)]="editForm.returnDate" />
+					<input type="date" [(ngModel)]="editForm.returnDate" (ngModelChange)="onBookingDatesChanged()" />
 				</label>
 				<label>
 					Total Days
-					<input type="number" min="0" [(ngModel)]="editForm.totalDays" />
+					<input type="number" min="0" [(ngModel)]="editForm.totalDays" readonly />
 				</label>
 				<label>
 					Total Amount
-					<input type="number" min="0" [(ngModel)]="editForm.totalAmount" />
+					<input type="number" min="0" [(ngModel)]="editForm.totalAmount" readonly />
 				</label>
 			</div>
 

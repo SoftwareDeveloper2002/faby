@@ -38,6 +38,7 @@ type BookingRecord = {
 
 type BookingFormModel = {
   email: string;
+  motorcycleId: string;
   motorcycleName: string;
   bookingType: string;
   startDate: string;
@@ -47,6 +48,15 @@ type BookingFormModel = {
   paymentMethod: string;
   paymentStatus: PaymentStatus;
   bank: string;
+};
+
+type ProductCategory = 'motorcycle' | 'tent' | 'table_chair' | 'inn';
+
+type AdminProductOption = {
+  id: string;
+  title: string;
+  category: ProductCategory;
+  ratePerDay: number;
 };
 
 @Component({
@@ -63,12 +73,14 @@ export class Bookings implements OnInit {
   searchTerm = '';
 
   bookings: BookingRecord[] = [];
+  adminProducts: AdminProductOption[] = [];
 
   isEditModalOpen = false;
   isCreateMode = false;
   editingBookingId = '';
   editForm: BookingFormModel = {
     email: '',
+    motorcycleId: '',
     motorcycleName: '',
     bookingType: 'motorcycle',
     startDate: '',
@@ -81,7 +93,14 @@ export class Bookings implements OnInit {
   };
 
   async ngOnInit(): Promise<void> {
-    await this.loadBookings();
+    await Promise.all([this.loadBookings(), this.loadAdminProducts()]);
+  }
+
+  get availableProductsForForm(): AdminProductOption[] {
+    const expectedCategory = this.getCategoryFromBookingType(this.editForm.bookingType);
+    return this.adminProducts
+      .filter((product) => product.category === expectedCategory)
+      .sort((a, b) => a.title.localeCompare(b.title));
   }
 
   get filteredBookings(): BookingRecord[] {
@@ -124,6 +143,7 @@ export class Bookings implements OnInit {
     this.editingBookingId = booking.id;
     this.editForm = {
       email: booking.email,
+      motorcycleId: booking.motorcycleId,
       motorcycleName: booking.motorcycleName,
       bookingType: booking.bookingType,
       startDate: booking.startDate,
@@ -134,6 +154,7 @@ export class Bookings implements OnInit {
       paymentStatus: booking.paymentStatus,
       bank: booking.bank,
     };
+    this.recalculateComputedFields();
   }
 
   openCreateModal(): void {
@@ -144,6 +165,7 @@ export class Bookings implements OnInit {
     this.editingBookingId = '';
     this.editForm = {
       email: '',
+      motorcycleId: '',
       motorcycleName: '',
       bookingType: 'motorcycle',
       startDate: '',
@@ -154,6 +176,7 @@ export class Bookings implements OnInit {
       paymentStatus: 'not_paid',
       bank: '',
     };
+    this.recalculateComputedFields();
   }
 
   closeEditModal(): void {
@@ -190,6 +213,7 @@ export class Bookings implements OnInit {
 
       const payload = {
         email: this.editForm.email.trim(),
+        motorcycleId: this.editForm.motorcycleId.trim() || this.createProductId(this.editForm.motorcycleName),
         motorcycleName: this.editForm.motorcycleName.trim(),
         bookingType: this.editForm.bookingType.trim().toLowerCase(),
         startDate: this.editForm.startDate,
@@ -239,7 +263,7 @@ export class Bookings implements OnInit {
 
       const payload = {
         email: this.editForm.email.trim(),
-        motorcycleId: this.createProductId(this.editForm.motorcycleName),
+        motorcycleId: this.editForm.motorcycleId.trim() || this.createProductId(this.editForm.motorcycleName),
         motorcycleName: this.editForm.motorcycleName.trim(),
         bookingType: this.editForm.bookingType.trim().toLowerCase(),
         startDate: this.editForm.startDate,
@@ -310,6 +334,30 @@ export class Bookings implements OnInit {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  }
+
+  onBookingTypeChanged(): void {
+    this.editForm.motorcycleId = '';
+    this.editForm.motorcycleName = '';
+    this.recalculateComputedFields();
+  }
+
+  onProductSelected(productId: string): void {
+    this.editForm.motorcycleId = productId;
+    const selected = this.availableProductsForForm.find((product) => product.id === productId);
+
+    if (!selected) {
+      this.editForm.motorcycleName = '';
+      this.recalculateComputedFields();
+      return;
+    }
+
+    this.editForm.motorcycleName = selected.title;
+    this.recalculateComputedFields();
+  }
+
+  onBookingDatesChanged(): void {
+    this.recalculateComputedFields();
   }
 
   async cancelBooking(booking: BookingRecord): Promise<void> {
@@ -393,6 +441,31 @@ export class Bookings implements OnInit {
     }
   }
 
+  private async loadAdminProducts(): Promise<void> {
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const snapshot = await get(ref(db, 'adminProducts'));
+
+      if (!snapshot.exists()) {
+        this.adminProducts = [];
+        return;
+      }
+
+      const rawData = snapshot.val() as Record<string, Partial<AdminProductOption>>;
+      this.adminProducts = Object.entries(rawData)
+        .map(([id, value]) => ({
+          id,
+          title: String(value.title ?? '').trim(),
+          category: this.normalizeProductCategory(String(value.category ?? 'motorcycle')),
+          ratePerDay: Number(value.ratePerDay ?? 0),
+        }))
+        .filter((product) => product.title && Number.isFinite(product.ratePerDay) && product.ratePerDay > 0);
+    } catch {
+      this.adminProducts = [];
+    }
+  }
+
   private normalizeBooking(id: string, record: Partial<BookingRecord>): BookingRecord {
     const paymentStatus = this.resolvePaymentStatus(record);
 
@@ -431,6 +504,95 @@ export class Bookings implements OnInit {
     }
 
     return 'not_paid';
+  }
+
+  private recalculateComputedFields(): void {
+    const start = this.parseDateAtMidnight(this.editForm.startDate);
+    const end = this.parseDateAtMidnight(this.editForm.returnDate);
+
+    if (!start || !end || end < start) {
+      this.editForm.totalDays = 0;
+      this.editForm.totalAmount = 0;
+      return;
+    }
+
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.floor((end.getTime() - start.getTime()) / millisecondsPerDay) + 1;
+    this.editForm.totalDays = days;
+
+    const rate = this.getSelectedRatePerDay();
+    this.editForm.totalAmount = Math.round(days * rate);
+  }
+
+  private getSelectedRatePerDay(): number {
+    const selectedById = this.editForm.motorcycleId
+      ? this.adminProducts.find((product) => product.id === this.editForm.motorcycleId)
+      : null;
+
+    if (selectedById && selectedById.ratePerDay > 0) {
+      return selectedById.ratePerDay;
+    }
+
+    const selectedByName = this.editForm.motorcycleName
+      ? this.adminProducts.find((product) => product.title === this.editForm.motorcycleName)
+      : null;
+
+    if (selectedByName && selectedByName.ratePerDay > 0) {
+      return selectedByName.ratePerDay;
+    }
+
+    if (!this.isCreateMode && this.editForm.totalDays > 0 && this.editForm.totalAmount > 0) {
+      return this.editForm.totalAmount / this.editForm.totalDays;
+    }
+
+    return 0;
+  }
+
+  private parseDateAtMidnight(value: string): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return parsed;
+  }
+
+  private getCategoryFromBookingType(bookingType: string): ProductCategory {
+    const normalized = bookingType.trim().toLowerCase();
+    if (normalized === 'room') {
+      return 'inn';
+    }
+
+    if (normalized === 'table_chair') {
+      return 'table_chair';
+    }
+
+    if (normalized === 'tent') {
+      return 'tent';
+    }
+
+    return 'motorcycle';
+  }
+
+  private normalizeProductCategory(value: string): ProductCategory {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'inn') {
+      return 'inn';
+    }
+
+    if (normalized === 'table_chair') {
+      return 'table_chair';
+    }
+
+    if (normalized === 'tent') {
+      return 'tent';
+    }
+
+    return 'motorcycle';
   }
 
 }
