@@ -108,13 +108,13 @@
 
 			<label>
 				Product Name
-				<input type="text" [(ngModel)]="editForm.motorcycleName" />
+				<input type="text" [(ngModel)]="editForm.motorcycleName" readonly />
 			</label>
 
 			<div class="modal-grid">
 				<label>
 					Booking Type
-					<select [(ngModel)]="editForm.bookingType">
+					<select [(ngModel)]="editForm.bookingType" [disabled]="true">
 						<option value="motorcycle">Motorcycle</option>
 						<option value="room">Room</option>
 						<option value="tent">Tent</option>
