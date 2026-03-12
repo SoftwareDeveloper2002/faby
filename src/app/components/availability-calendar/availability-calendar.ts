@@ -33,6 +33,9 @@ export class AvailabilityCalendarComponent {
   @Input() clearButtonText = 'Clear dates';
   @Input() showClearButton = false;
   @Input() isLoading = false;
+  @Input() showMonthNavigation = true;
+  @Input() previousButtonLabel = 'Previous month';
+  @Input() nextButtonLabel = 'Next month';
   @Input() loadingText = 'Loading booked dates...';
   @Input() selectionError = '';
   @Input() conflictError = '';
@@ -40,6 +43,8 @@ export class AvailabilityCalendarComponent {
 
   @Output() daySelected = new EventEmitter<AvailabilityCalendarDay>();
   @Output() clearSelection = new EventEmitter<void>();
+  @Output() previousMonth = new EventEmitter<void>();
+  @Output() nextMonth = new EventEmitter<void>();
 
   readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -53,5 +58,13 @@ export class AvailabilityCalendarComponent {
 
   onClearSelection(): void {
     this.clearSelection.emit();
+  }
+
+  onPreviousMonth(): void {
+    this.previousMonth.emit();
+  }
+
+  onNextMonth(): void {
+    this.nextMonth.emit();
   }
 }

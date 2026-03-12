@@ -119,6 +119,7 @@ export class Tentlist implements OnInit {
   selectedTentId = '';
   startDate = '';
   returnDate = '';
+  monthOffset = 0;
   bookingError = '';
   isAvailabilityLoading = true;
   readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -191,7 +192,9 @@ export class Tentlist implements OnInit {
   get calendarMonths(): CalendarMonth[] {
     const months: CalendarMonth[] = [];
     const baseDate = this.startDate ? this.parseIsoDate(this.startDate) : this.parseIsoDate(this.todayIso);
-    const firstMonth = baseDate ? new Date(baseDate.getFullYear(), baseDate.getMonth(), 1) : new Date();
+    const firstMonth = baseDate
+      ? new Date(baseDate.getFullYear(), baseDate.getMonth() + this.monthOffset, 1)
+      : new Date();
 
     for (let index = 0; index < 2; index += 1) {
       const monthDate = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
@@ -278,6 +281,18 @@ export class Tentlist implements OnInit {
     this.startDate = '';
     this.returnDate = '';
     this.bookingError = '';
+  }
+
+  goToPreviousMonth(): void {
+    if (this.monthOffset <= 0) {
+      return;
+    }
+
+    this.monthOffset -= 1;
+  }
+
+  goToNextMonth(): void {
+    this.monthOffset += 1;
   }
 
   proceedBooking(): void {

@@ -106,6 +106,7 @@ export class Tablechairlist implements OnInit {
   selectedPackageId = this.packages[0].id;
   bookingStartDate = '';
   bookingReturnDate = '';
+  monthOffset = 0;
   isAvailabilityLoading = true;
   calendarSelectionError = '';
   readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -179,7 +180,9 @@ export class Tablechairlist implements OnInit {
   get calendarMonths(): CalendarMonth[] {
     const months: CalendarMonth[] = [];
     const baseDate = this.bookingStartDate ? this.parseIsoDate(this.bookingStartDate) : this.parseIsoDate(this.todayIso);
-    const firstMonth = baseDate ? new Date(baseDate.getFullYear(), baseDate.getMonth(), 1) : new Date();
+    const firstMonth = baseDate
+      ? new Date(baseDate.getFullYear(), baseDate.getMonth() + this.monthOffset, 1)
+      : new Date();
 
     for (let index = 0; index < 2; index += 1) {
       const monthDate = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
@@ -256,6 +259,18 @@ export class Tablechairlist implements OnInit {
     this.bookingStartDate = '';
     this.bookingReturnDate = '';
     this.calendarSelectionError = '';
+  }
+
+  goToPreviousMonth(): void {
+    if (this.monthOffset <= 0) {
+      return;
+    }
+
+    this.monthOffset -= 1;
+  }
+
+  goToNextMonth(): void {
+    this.monthOffset += 1;
   }
 
   proceedBooking(): void {

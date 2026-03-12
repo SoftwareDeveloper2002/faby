@@ -40,6 +40,8 @@
 				[conflictError]="hasAvailabilityConflict ? 'Selected dates overlap with an existing booking for this motorcycle. Please choose a different date range.' : ''"
 				[calendarMonths]="calendarMonths"
 				(daySelected)="onCalendarDayClick($event)"
+				(previousMonth)="goToPreviousMonth()"
+				(nextMonth)="goToNextMonth()"
 				(clearSelection)="resetCalendarSelection()">
 			</app-availability-calendar>
 

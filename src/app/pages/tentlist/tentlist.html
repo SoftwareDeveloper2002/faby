@@ -65,6 +65,8 @@
         [conflictError]="hasAvailabilityConflict ? 'Selected dates overlap with an existing tent booking. Please choose a different range.' : ''"
         [calendarMonths]="calendarMonths"
         (daySelected)="onCalendarDayClick($event)"
+        (previousMonth)="goToPreviousMonth()"
+        (nextMonth)="goToNextMonth()"
         (clearSelection)="resetCalendarSelection()">
       </app-availability-calendar>
     </div>
