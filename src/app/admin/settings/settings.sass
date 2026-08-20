@@ -89,10 +89,12 @@ h1
 	font-size: .92rem
 	background: #fff
 	color: var(--ink)
+	transition: border-color .15s ease, box-shadow .15s ease
 
 .password-form input:focus
-	outline: 2px solid #e7c29a
-	outline-offset: 1px
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
 
 .message
 	margin: 0
@@ -118,10 +120,16 @@ h1
 	background: linear-gradient(135deg, #a56534, #874a21)
 	color: #fff
 	cursor: pointer
+	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
+
+.password-form button:hover:not([disabled])
+	transform: translateY(-1px)
+	box-shadow: 0 8px 16px rgba(135, 74, 33, .24)
 
 .password-form button[disabled]
 	opacity: .7
 	cursor: not-allowed
+	transform: none
 
 @media (max-width: 980px)
 	.settings-grid

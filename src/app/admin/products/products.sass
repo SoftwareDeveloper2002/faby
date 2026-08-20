@@ -16,13 +16,18 @@
 	color: var(--ink)
 
 .hero,
-.form-panel,
-.guide-panel,
+.page-message,
+.toolbar,
 .list-panel
 	max-width: 72rem
 	margin: 0 auto
 
 .hero
+	display: flex
+	align-items: flex-start
+	justify-content: space-between
+	gap: 1rem
+	flex-wrap: wrap
 	margin-bottom: 1rem
 
 .eyebrow
@@ -41,8 +46,14 @@ h1
 	margin: .55rem 0 0
 	color: var(--ink-soft)
 
-.form-panel,
-.guide-panel,
+.btn-add
+	flex-shrink: 0
+	white-space: nowrap
+
+.page-message
+	margin-bottom: .85rem
+
+.toolbar,
 .list-panel
 	padding: 1rem
 	border: 1px solid var(--line)
@@ -50,15 +61,60 @@ h1
 	background: color-mix(in srgb, var(--panel) 92%, white)
 	box-shadow: 0 14px 28px rgba(75, 49, 28, .12)
 
-.guide-panel,
-.list-panel
-	margin-top: .85rem
+.toolbar
+	margin-bottom: .85rem
+	display: grid
+	gap: .75rem
 
-.form-panel h2,
-.guide-panel h2,
-.list-panel h2
-	margin: 0 0 .75rem
-	font-size: 1.2rem
+.list-panel
+	margin-top: 0
+
+.visually-hidden
+	position: absolute
+	width: 1px
+	height: 1px
+	overflow: hidden
+	clip: rect(0 0 0 0)
+
+.search-field
+	display: block
+
+.search-field input
+	max-width: 24rem
+
+.filter-row
+	display: flex
+	flex-wrap: wrap
+	gap: .6rem
+	justify-content: space-between
+
+.filter-chip-group
+	display: flex
+	flex-wrap: wrap
+	gap: .4rem
+
+.filter-chip
+	padding: .38rem .72rem
+	font-size: .78rem
+	font-weight: 700
+	border-radius: 999px
+	background: #fff
+	color: var(--ink-soft)
+	border: 1px solid var(--line)
+	box-shadow: none
+
+.filter-chip:hover:not([disabled])
+	transform: none
+	background: #fff6ea
+	box-shadow: none
+
+.filter-chip.active
+	background: linear-gradient(135deg, #a56534, #874a21)
+	border-color: transparent
+	color: #fff
+
+.filter-chip.active:hover
+	background: linear-gradient(135deg, #a56534, #874a21)
 
 .product-form
 	display: grid
@@ -90,12 +146,14 @@ textarea
 	font-size: .92rem
 	background: #fff
 	color: var(--ink)
+	transition: border-color .15s ease, box-shadow .15s ease
 
 input:focus,
 select:focus,
 textarea:focus
-	outline: 2px solid #e7c29a
-	outline-offset: 1px
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
 
 textarea
 	resize: vertical
@@ -148,10 +206,20 @@ button
 	background: linear-gradient(135deg, #a56534, #874a21)
 	color: #fff
 	cursor: pointer
+	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
+
+button:hover:not([disabled])
+	transform: translateY(-1px)
+	box-shadow: 0 8px 16px rgba(135, 74, 33, .24)
+
+button:focus-visible
+	outline: 2px solid #f4d5b0
+	outline-offset: 2px
 
 button[disabled]
 	opacity: .7
 	cursor: not-allowed
+	transform: none
 
 .guide-panel p
 	margin: 0 0 .35rem
@@ -163,8 +231,8 @@ button[disabled]
 
 .product-grid
 	display: grid
-	gap: .75rem
-	grid-template-columns: repeat(2, minmax(0, 1fr))
+	gap: .9rem
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr))
 
 .product-card
 	padding: .9rem
@@ -172,13 +240,110 @@ button[disabled]
 	border-radius: .8rem
 	background: #fff
 	overflow: hidden
+	transition: transform .18s ease, box-shadow .18s ease
 
-.card-image
+.product-card:hover
+	transform: translateY(-3px)
+	box-shadow: 0 14px 26px rgba(75, 49, 28, .16)
+
+.card-image,
+.card-image-placeholder
 	width: 100%
 	height: 11rem
-	object-fit: cover
 	border-radius: .6rem
 	margin-bottom: .65rem
+
+.card-image
+	object-fit: cover
+	background: #f1e4d2
+
+.card-image.fallback-image,
+.image-preview.fallback-image
+	object-fit: contain
+	padding: 1rem
+
+.card-image-placeholder
+	display: grid
+	place-items: center
+	background: #f6ead9
+	border: 1px dashed var(--line)
+	color: var(--ink-soft)
+	font-size: .8rem
+	font-weight: 700
+	text-align: center
+
+.product-card.is-hidden
+	background: #fbf6ee
+
+.product-card.is-hidden .card-image,
+.product-card.is-hidden .card-image-placeholder
+	opacity: .55
+
+.status-row
+	display: flex
+	align-items: center
+	justify-content: space-between
+	gap: .6rem
+	margin-bottom: .55rem
+
+.status-pill
+	background: #e5f6e9
+	color: #1f6d31
+
+.status-pill.hidden
+	background: #f1e4d2
+	color: #7a5a34
+
+// Standard CSS toggle switch built from a native checkbox for accessibility.
+.switch
+	position: relative
+	display: inline-block
+	width: 2.3rem
+	height: 1.3rem
+	flex-shrink: 0
+	cursor: pointer
+
+.switch input
+	position: absolute
+	width: 100%
+	height: 100%
+	margin: 0
+	opacity: 0
+	cursor: pointer
+	z-index: 1
+
+.switch .slider
+	position: absolute
+	inset: 0
+	background: #e3cfae
+	border-radius: 999px
+	transition: background-color .18s ease
+
+.switch .slider::before
+	content: ""
+	position: absolute
+	top: .16rem
+	left: .16rem
+	width: .98rem
+	height: .98rem
+	border-radius: 50%
+	background: #fff
+	box-shadow: 0 2px 4px rgba(0, 0, 0, .18)
+	transition: transform .18s ease
+
+.switch input:checked + .slider
+	background: #8fbf9a
+
+.switch input:checked + .slider::before
+	transform: translateX(1rem)
+
+.switch input:focus-visible + .slider
+	outline: 2px solid #e7c29a
+	outline-offset: 2px
+
+.switch input:disabled + .slider
+	opacity: .6
+	cursor: not-allowed
 
 .head
 	display: flex
@@ -252,6 +417,7 @@ button[disabled]
 	inset: 0
 	background: rgba(30, 20, 12, .45)
 	z-index: 90
+	animation: fade-in .18s ease
 
 .modal
 	position: fixed
@@ -267,6 +433,21 @@ button[disabled]
 	background: color-mix(in srgb, var(--panel) 96%, white)
 	box-shadow: 0 22px 38px rgba(45, 27, 13, .35)
 	z-index: 91
+	animation: modal-in .18s ease
+
+@keyframes fade-in
+	from
+		opacity: 0
+	to
+		opacity: 1
+
+@keyframes modal-in
+	from
+		opacity: 0
+		transform: translate(-50%, -50%) scale(.97)
+	to
+		opacity: 1
+		transform: translate(-50%, -50%) scale(1)
 
 .modal-head
 	display: flex
@@ -307,6 +488,7 @@ button[disabled]
 	width: min(100%, 20rem)
 	height: 12rem
 	object-fit: cover
+	background: #f1e4d2
 	border: 1px solid var(--line)
 	border-radius: .65rem
 
@@ -318,3 +500,17 @@ button[disabled]
 
 	.modal
 		width: calc(100% - 1rem)
+
+	.hero
+		flex-direction: column
+		align-items: stretch
+
+	.btn-add
+		width: 100%
+
+	.filter-row
+		flex-direction: column
+		align-items: stretch
+
+	.search-field input
+		max-width: none

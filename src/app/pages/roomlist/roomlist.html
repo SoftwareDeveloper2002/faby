@@ -9,7 +9,7 @@
 		@for (room of rooms; track room.id) {
 			<article class="room-card" [class.popular]="room.isPopular">
 				<div class="room-visual">
-					<img class="room-image" [src]="room.imageUrl || '/faby.png'" [alt]="room.name + ' image'" />
+					<img class="room-image" [src]="room.imageUrl || '/faby.png'" [alt]="room.name + ' image'" (error)="onImageError($event)" />
 				</div>
 
 				<div class="room-content">

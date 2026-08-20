@@ -8,7 +8,7 @@
   <section class="card-grid" aria-label="Table and chair rental packages">
     @for (item of packages; track item.id) {
       <article class="item-card" [class.popular]="item.isPopular">
-        <img class="card-image" [src]="item.imageUrl || '/faby.png'" [alt]="item.name + ' image'" />
+        <img class="card-image" [src]="item.imageUrl || '/faby.png'" [alt]="item.name + ' image'" (error)="onImageError($event)" />
 
         <div class="top-row">
           <h2>{{ item.name }}</h2>

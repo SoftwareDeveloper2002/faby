@@ -55,10 +55,12 @@ h1
 	font-size: .92rem
 	color: var(--ink)
 	background: #fff
+	transition: border-color .15s ease, box-shadow .15s ease
 
 .admin-login-form input:focus
-	outline: 2px solid #e8c49b
-	outline-offset: 1px
+	outline: none
+	border-color: var(--accent)
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
 
 .message
 	margin: 0
@@ -84,10 +86,16 @@ button
 	color: #fff
 	background: linear-gradient(135deg, #a46433, #874a21)
 	cursor: pointer
+	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
+
+button:hover:not([disabled])
+	transform: translateY(-1px)
+	box-shadow: 0 8px 16px rgba(135, 74, 33, .24)
 
 button[disabled]
 	opacity: .7
 	cursor: not-allowed
+	transform: none
 
 button:focus-visible
 	outline: 2px solid #f4d5b0

@@ -70,7 +70,7 @@
 				@for (motorcycle of motorcycles; track motorcycle.id) {
 					<li [class.active]="selectedMotorcycleId === motorcycle.id">
 						<button type="button" (click)="selectedMotorcycleId = motorcycle.id; onSelectedMotorcycleChange()">
-							<img class="motorcycle-image" [src]="motorcycle.imageUrl || '/faby.png'" [alt]="motorcycle.name + ' image'">
+							<img class="motorcycle-image" [src]="motorcycle.imageUrl || '/faby.png'" [alt]="motorcycle.name + ' image'" (error)="onImageError($event)">
 							<span class="motorcycle-name">{{ motorcycle.name }}</span>
 							<span class="motorcycle-rate">PHP {{ motorcycle.dailyRate }} / day</span>
 							@if (motorcycle.helmetIncluded) {

@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../component/navbar/navbar';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { get, getDatabase, push, ref, remove, set, update } from 'firebase/database';
-import { getDownloadURL, getStorage, ref as storageRef, uploadBytes } from 'firebase/storage';
+import { getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
@@ -17,6 +16,13 @@ const firebaseConfig = {
   measurementId: 'G-ZBZJKVWND9',
 };
 
+// Product photos are hosted on Cloudinary (unsigned upload) instead of Firebase Storage —
+// Firebase Storage requires an active Blaze billing account just to serve files, and this
+// project's billing account is currently closed. Only the cloud name + an UNSIGNED upload
+// preset are ever needed client-side; never put an API secret in frontend code.
+const CLOUDINARY_CLOUD_NAME = 'srza69qv';
+const CLOUDINARY_UPLOAD_PRESET = 'faby_admin_products';
+
 type ProductCategory = 'motorcycle' | 'tent' | 'table_chair' | 'inn';
 
 type AdminProduct = {
@@ -27,6 +33,7 @@ type AdminProduct = {
   ratePerDay: number;
   imageUrl?: string;
   isRental: boolean;
+  isAvailable: boolean;
   details: Record<string, string | number | boolean>;
   createdAt: string;
 };
@@ -56,11 +63,13 @@ type ProductFormModel = {
   templateUrl: './products.html',
   styleUrl: './products.sass',
 })
-export class Products implements OnInit {
+export class Products implements OnInit, OnDestroy {
   isLoading = true;
   isSaving = false;
   isUpdating = false;
   deletingProductId = '';
+  togglingProductId = '';
+  isAddModalOpen = false;
   isEditModalOpen = false;
   editingProductId = '';
   addImagePreview = '';
@@ -68,8 +77,13 @@ export class Products implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  searchTerm = '';
+  categoryFilter: ProductCategory | 'all' = 'all';
+  statusFilter: 'all' | 'available' | 'hidden' = 'all';
+
   private addImageFile: File | null = null;
   private editImageFile: File | null = null;
+  private stopWatchingProducts: (() => void) | null = null;
 
   products: AdminProduct[] = [];
 
@@ -83,13 +97,45 @@ export class Products implements OnInit {
   form: ProductFormModel = this.createDefaultForm();
   editForm: ProductFormModel = this.createDefaultForm();
 
-  async ngOnInit(): Promise<void> {
-    await this.loadProducts();
+  ngOnInit(): void {
+    this.watchProducts();
+  }
+
+  ngOnDestroy(): void {
+    this.stopWatchingProducts?.();
+  }
+
+  get filteredProducts(): AdminProduct[] {
+    const term = this.searchTerm.trim().toLowerCase();
+
+    return this.products.filter((product) => {
+      const matchesCategory = this.categoryFilter === 'all' || product.category === this.categoryFilter;
+      const matchesStatus =
+        this.statusFilter === 'all' ||
+        (this.statusFilter === 'available' && product.isAvailable !== false) ||
+        (this.statusFilter === 'hidden' && product.isAvailable === false);
+      const matchesSearch = !term || product.title.toLowerCase().includes(term);
+
+      return matchesCategory && matchesStatus && matchesSearch;
+    });
   }
 
   onCategoryChange(): void {
     this.successMessage = '';
     this.errorMessage = '';
+  }
+
+  openAddModal(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.form = this.createDefaultForm();
+    this.addImageFile = null;
+    this.addImagePreview = '';
+    this.isAddModalOpen = true;
+  }
+
+  closeAddModal(): void {
+    this.isAddModalOpen = false;
   }
 
   async addProduct(): Promise<void> {
@@ -113,7 +159,7 @@ export class Products implements OnInit {
       const db = getDatabase(app, firebaseConfig.databaseURL);
       const productRef = push(ref(db, 'adminProducts'));
       const imageUrl = this.addImageFile
-        ? await this.uploadProductImage(app, this.addImageFile, productRef.key ?? crypto.randomUUID())
+        ? await this.uploadProductImage(this.addImageFile, productRef.key ?? crypto.randomUUID())
         : '';
 
       const payload: Omit<AdminProduct, 'id'> = {
@@ -123,17 +169,19 @@ export class Products implements OnInit {
         ratePerDay: this.form.ratePerDay,
         imageUrl,
         isRental: true,
+        isAvailable: true,
         details: this.buildCategoryDetails(this.form),
         createdAt: new Date().toISOString(),
       };
 
       await set(productRef, payload);
 
-      this.products = [{ id: productRef.key ?? crypto.randomUUID(), ...payload }, ...this.products];
+      // this.products refreshes on its own — watchProducts() keeps a live subscription.
       this.form = this.createDefaultForm();
       this.addImageFile = null;
       this.addImagePreview = '';
       this.successMessage = 'Product added successfully.';
+      this.isAddModalOpen = false;
     } catch (error) {
       this.errorMessage = this.getErrorMessage(error);
     } finally {
@@ -185,7 +233,7 @@ export class Products implements OnInit {
       const db = getDatabase(app, firebaseConfig.databaseURL);
       const currentProduct = this.products.find((product) => product.id === this.editingProductId);
       const imageUrl = this.editImageFile
-        ? await this.uploadProductImage(app, this.editImageFile, this.editingProductId)
+        ? await this.uploadProductImage(this.editImageFile, this.editingProductId)
         : (currentProduct?.imageUrl ?? '');
       const payload = {
         category: this.editForm.category,
@@ -199,17 +247,7 @@ export class Products implements OnInit {
 
       await update(ref(db, `adminProducts/${this.editingProductId}`), payload);
 
-      this.products = this.products.map((product) => {
-        if (product.id !== this.editingProductId) {
-          return product;
-        }
-
-        return {
-          ...product,
-          ...payload,
-        };
-      });
-
+      // this.products refreshes on its own — watchProducts() keeps a live subscription.
       this.successMessage = 'Product updated successfully.';
       this.closeEditModal();
     } catch (error) {
@@ -235,7 +273,7 @@ export class Products implements OnInit {
       const db = getDatabase(app, firebaseConfig.databaseURL);
       await remove(ref(db, `adminProducts/${product.id}`));
 
-      this.products = this.products.filter((item) => item.id !== product.id);
+      // this.products refreshes on its own — watchProducts() keeps a live subscription.
       this.successMessage = 'Product deleted successfully.';
 
       if (this.editingProductId === product.id) {
@@ -248,8 +286,41 @@ export class Products implements OnInit {
     }
   }
 
+  /** Instantly hides/shows a product on the public site. Realtime — every open tab (admin or customer) picks it up via the live listener, no refresh needed. */
+  async toggleAvailability(product: AdminProduct): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.togglingProductId = product.id;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const nextAvailability = product.isAvailable === false;
+
+      await update(ref(db, `adminProducts/${product.id}`), { isAvailable: nextAvailability });
+
+      this.successMessage = nextAvailability
+        ? `${product.title} is now visible on the site.`
+        : `${product.title} is now hidden from the site.`;
+    } catch (error) {
+      this.errorMessage = this.getErrorMessage(error);
+    } finally {
+      this.togglingProductId = '';
+    }
+  }
+
   getCategoryLabel(category: ProductCategory): string {
     return this.categories.find((item) => item.value === category)?.label ?? category;
+  }
+
+  /** Falls back to the Faby logo when a stored image URL fails to load (e.g. storage outage). */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img.src.endsWith('/faby.png')) {
+      return;
+    }
+    img.src = '/faby.png';
+    img.classList.add('fallback-image');
   }
 
   getDetailEntries(product: AdminProduct): Array<{ key: string; value: string | number | boolean }> {
@@ -323,37 +394,54 @@ export class Products implements OnInit {
     this.editImagePreview = '';
   }
 
-  private async loadProducts(): Promise<void> {
+  /** Live subscription — any change (this tab, another admin, a direct DB edit) reflects immediately with no page refresh. */
+  private watchProducts(): void {
     this.isLoading = true;
 
-    try {
-      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-      const db = getDatabase(app, firebaseConfig.databaseURL);
-      const snapshot = await get(ref(db, 'adminProducts'));
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
 
-      if (!snapshot.exists()) {
-        this.products = [];
-        return;
-      }
+    this.stopWatchingProducts = onValue(
+      ref(db, 'adminProducts'),
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          this.products = [];
+          this.isLoading = false;
+          return;
+        }
 
-      const data = snapshot.val() as Record<string, Omit<AdminProduct, 'id'>>;
-      this.products = Object.entries(data)
-        .map(([id, product]) => ({ id, ...product }))
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } catch (error) {
-      this.errorMessage = this.getErrorMessage(error);
-    } finally {
-      this.isLoading = false;
-    }
+        const data = snapshot.val() as Record<string, Omit<AdminProduct, 'id'>>;
+        this.products = Object.entries(data)
+          .map(([id, product]) => ({ ...product, id, isAvailable: product.isAvailable ?? true }))
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        this.isLoading = false;
+      },
+      (error) => {
+        this.errorMessage = this.getErrorMessage(error);
+        this.isLoading = false;
+      },
+    );
   }
 
-  private async uploadProductImage(app: ReturnType<typeof getApp>, file: File, productKey: string): Promise<string> {
-    const storage = getStorage(app, 'gs://faby-be0b9.firebasestorage.app');
-    const extension = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
-    const filePath = `admin-products/${productKey}-${Date.now()}.${extension}`;
-    const fileRef = storageRef(storage, filePath);
-    await uploadBytes(fileRef, file);
-    return getDownloadURL(fileRef);
+  private async uploadProductImage(file: File, productKey: string): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'admin-products');
+    formData.append('public_id', `${productKey}-${Date.now()}`);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      throw new Error(errorBody?.error?.message ?? 'Image upload failed. Please try again.');
+    }
+
+    const data = await response.json();
+    return data.secure_url as string;
   }
 
   private buildCategoryDetails(source: ProductFormModel): Record<string, string | number | boolean> {

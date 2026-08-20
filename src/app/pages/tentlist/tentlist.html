@@ -8,7 +8,7 @@
   <section class="card-grid" aria-label="Available tent rentals">
     @for (tent of tents; track tent.id) {
       <article class="item-card" [class.popular]="tent.isPopular">
-        <img class="card-image" [src]="tent.imageUrl || '/faby.png'" [alt]="tent.name + ' image'" />
+        <img class="card-image" [src]="tent.imageUrl || '/faby.png'" [alt]="tent.name + ' image'" (error)="onImageError($event)" />
 
         <div class="top-row">
           <h2>{{ tent.name }}</h2>

@@ -23,6 +23,7 @@ type AdminProduct = {
   description: string;
   ratePerDay: number;
   imageUrl?: string;
+  isAvailable?: boolean;
   details?: Record<string, string | number | boolean>;
 };
 
@@ -97,6 +98,16 @@ export class Motorcyclelist implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.loadAdminMotorcycles();
     await this.loadSuccessfulPayments();
+  }
+
+  /** Falls back to the Faby logo when a stored image URL fails to load (e.g. storage outage). */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img.src.endsWith('/faby.png')) {
+      return;
+    }
+    img.src = '/faby.png';
+    img.classList.add('fallback-image');
   }
 
   get selectedMotorcycle(): Motorcycle {
@@ -422,7 +433,7 @@ export class Motorcyclelist implements OnInit {
 
       const data = snapshot.val() as Record<string, AdminProduct>;
       const mapped = Object.entries(data)
-        .filter(([, product]) => product.category === 'motorcycle' && Number(product.ratePerDay) > 0)
+        .filter(([, product]) => product.category === 'motorcycle' && Number(product.ratePerDay) > 0 && product.isAvailable !== false)
         .map(([id, product]) => ({
           id,
           name: String(product.title || 'Motorcycle Unit'),
