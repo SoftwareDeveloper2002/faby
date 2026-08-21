@@ -19,6 +19,8 @@
           <span>Deposit{{ breakdown.depositCycles > 1 ? ' (' + breakdown.depositCycles + ' charges)' : '' }}:</span>
           <strong>PHP {{ breakdown.depositAmount }}</strong>
         </p>
+      } @else {
+        <p><span>Deposit:</span> <strong>None</strong></p>
       }
 
       <p class="total"><span>Total amount:</span> <strong>PHP {{ breakdown.totalAmount }}</strong></p>

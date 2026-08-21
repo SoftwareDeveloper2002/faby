@@ -13,6 +13,8 @@
           <span>Deposit{{ booking.depositCycles > 1 ? ' (' + booking.depositCycles + ' charges)' : '' }}:</span>
           <strong>PHP {{ booking.depositAmount }}</strong>
         </p>
+      } @else {
+        <p><span>Deposit:</span> <strong>None</strong></p>
       }
       <p class="total"><span>Amount to pay:</span> <strong>PHP {{ booking.totalAmount }}</strong></p>
     </div>

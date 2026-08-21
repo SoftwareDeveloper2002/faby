@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getApp, getApps, initializeApp } from 'firebase/app';
@@ -32,6 +32,16 @@ type PendingPayment = {
   source?: string;
   receiptUrl?: string;
   referenceNote?: string;
+  returnPath?: string;
+};
+
+/** Where "browse more" should send the customer, and what to call it, per rental category. */
+const BROWSE_MORE_BY_TYPE: Record<string, { path: string; label: string }> = {
+  motorcycle: { path: '/motorcycle-list', label: 'Book Another Ride' },
+  tent: { path: '/tent-list', label: 'Book Another Tent' },
+  table_chair: { path: '/table-chair-list', label: 'Book Another Set' },
+  room: { path: '/room-list', label: 'Book Another Room' },
+  inn: { path: '/room-list', label: 'Book Another Room' },
 };
 
 @Component({
@@ -46,8 +56,13 @@ export class Paymentsuccess implements OnInit {
   saveSuccess = '';
   /** True when this booking is a QR-transfer submission awaiting admin review, not yet a confirmed booking. */
   isPendingReview = false;
+  browsePath = '/motorcycle-list';
+  browseLabel = 'Book Another Ride';
 
-  constructor(private readonly route: ActivatedRoute) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly location: Location,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     const params = this.route.snapshot.queryParams;
@@ -81,6 +96,16 @@ export class Paymentsuccess implements OnInit {
       bank: String(read('bank') ?? ''),
       createdAt: new Date().toISOString(),
     };
+
+    const browseMoreConfig = BROWSE_MORE_BY_TYPE[shared.bookingType] ?? BROWSE_MORE_BY_TYPE['motorcycle'];
+    this.browsePath = String(read('returnPath') ?? '') || browseMoreConfig.path;
+    this.browseLabel = browseMoreConfig.label;
+
+    // Strip the query string (booking details, deposit amounts, the receipt image URL, etc.)
+    // now that it's been read into memory — leaving it in the address bar is both messy and a
+    // real bug: refreshing this page would otherwise re-run this handler and write a duplicate
+    // booking/submission record every time.
+    this.location.replaceState('/payment-success');
 
     if (!shared.totalAmount || !shared.totalDays) {
       this.isSaving = false;
