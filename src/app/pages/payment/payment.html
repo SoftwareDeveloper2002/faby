@@ -7,6 +7,13 @@
       <p><span>Selected item:</span> <strong>{{ booking.motorcycleName }}</strong></p>
       <p><span>Rental dates:</span> <strong>{{ booking.startDate }} to {{ booking.returnDate }}</strong></p>
       <p><span>Total {{ booking.bookingType === 'room' ? 'nights' : 'days' }}:</span> <strong>{{ booking.totalDays }}</strong></p>
+      <p><span>Rental subtotal:</span> <strong>PHP {{ booking.rentalSubtotal }}</strong></p>
+      @if (booking.depositAmount > 0) {
+        <p>
+          <span>Deposit{{ booking.depositCycles > 1 ? ' (' + booking.depositCycles + ' charges)' : '' }}:</span>
+          <strong>PHP {{ booking.depositAmount }}</strong>
+        </p>
+      }
       <p class="total"><span>Amount to pay:</span> <strong>PHP {{ booking.totalAmount }}</strong></p>
     </div>
 
@@ -14,56 +21,43 @@
       <button type="button" [class.active]="selectedMethod === 'cash'" (click)="selectedMethod = 'cash'">
         Cash on Arrival
       </button>
-      <button type="button" [class.active]="selectedMethod === 'ewallet'" (click)="selectedMethod = 'ewallet'">
-        E-Wallet
-      </button>
-      <button type="button" [class.active]="selectedMethod === 'bank'" (click)="selectedMethod = 'bank'">
-        Bank Transfer
-      </button>
-      <button type="button" [class.active]="selectedMethod === 'qrph'" (click)="selectedMethod = 'qrph'">
-        QRPh
+      <button type="button" [class.active]="selectedMethod === 'qr'" (click)="selectedMethod = 'qr'">
+        Pay via QR Code
       </button>
     </div>
 
-    @if (selectedMethod === 'qrph') {
-      <div class="bank-picker">
-        <p class="method-note">
-          You will be redirected to PayMongo checkout where you can pay using a QRPh-supported QR payment flow.
-        </p>
-      </div>
-    }
+    @if (selectedMethod === 'qr') {
+      <div class="qr-panel">
+        @if (isLoadingQrCode) {
+          <p class="method-note">Loading payment QR code...</p>
+        } @else if (qrCodeUrl) {
+          <img class="qr-image" [src]="qrCodeUrl" alt="Scan this QR code to pay" />
+        } @else {
+          <p class="method-note">No payment QR code has been set up yet. Please contact Monting Balay before proceeding.</p>
+        }
 
-    @if (selectedMethod === 'ewallet') {
-      <div class="bank-picker">
-        <label for="ewalletOption">Available e-wallets (via PayMongo)</label>
-        <select id="ewalletOption" name="ewalletOption" [(ngModel)]="selectedEwallet">
-          @for (wallet of ewalletOptions; track wallet.code) {
-            <option [value]="wallet.code">{{ wallet.label }}</option>
-          }
-        </select>
-        <p class="method-note">
-          You will be redirected to PayMongo secure checkout to complete payment with {{ selectedEwalletLabel }}.
-        </p>
-      </div>
-    }
+        @if (paymentInstructions) {
+          <p class="method-note">{{ paymentInstructions }}</p>
+        }
 
-    @if (selectedMethod === 'bank') {
-      <div class="bank-picker">
-        <label for="bankOption">Available banks (via PayMongo)</label>
-        <select id="bankOption" name="bankOption" [(ngModel)]="selectedBank">
-          <optgroup label="Local Banks">
-            @for (bank of localBankOptions; track bank.code) {
-              <option [value]="bank.code">{{ bank.label }}</option>
-            }
-          </optgroup>
-          <optgroup label="International Banks">
-            @for (bank of internationalBankOptions; track bank.code) {
-              <option [value]="bank.code">{{ bank.label }}</option>
-            }
-          </optgroup>
-        </select>
+        <label>
+          Upload your receipt screenshot
+          <input type="file" accept="image/*" (change)="onReceiptSelected($event)" />
+        </label>
+
+        @if (receiptPreview) {
+          <div class="receipt-preview-wrap">
+            <img class="receipt-preview" [src]="receiptPreview" alt="Selected receipt preview" />
+          </div>
+        }
+
+        <label>
+          Reference note (optional)
+          <input type="text" [(ngModel)]="referenceNote" placeholder="e.g. GCash ref. no. or sender name" />
+        </label>
+
         <p class="method-note">
-          You will be redirected to PayMongo checkout to continue with your selected bank channel. International bank availability depends on PayMongo-supported rails.
+          Your booking will be marked <strong>pending</strong> until an admin reviews and approves your receipt.
         </p>
       </div>
     }
@@ -84,7 +78,7 @@
     </div>
 
     <button type="button" class="btn-primary" [disabled]="isProcessing || !hasAcceptedPolicies" (click)="confirmPayment()">
-      {{ isProcessing ? 'Processing...' : 'Confirm Payment' }}
+      {{ isProcessing ? 'Submitting...' : (selectedMethod === 'qr' ? 'Submit Payment Proof' : 'Confirm Cash Booking') }}
     </button>
   </section>
 

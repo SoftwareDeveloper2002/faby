@@ -2,8 +2,10 @@ import { Routes } from '@angular/router';
 import { Dasboard } from './admin/dasboard/dasboard';
 import { Bookings } from './admin/bookings/bookings';
 import { Login as AdminLogin } from './admin/login/login';
+import { Payments } from './admin/payments/payments';
 import { Products } from './admin/products/products';
 import { Settings } from './admin/settings/settings';
+import { adminAuthGuard } from './guards/admin-auth.guard';
 import { Bookingconfirm } from './pages/bookingconfirm/bookingconfirm';
 import { Landing } from './pages/landing/landing';
 import { Login } from './pages/login/login';
@@ -32,10 +34,11 @@ export const routes: Routes = [
   { path: 'payment-failed', component: Paymentfailed, title: 'Monting Balay | Payment Failed' },
   { path: 'login', component: Login, title: 'Faby | Login' },
   { path: 'admin/login', component: AdminLogin, title: 'Monting Balay | Admin Login' },
-  { path: 'admin/dashboard', component: Dasboard, title: 'Monting Balay | Admin Dashboard' },
-  { path: 'admin/bookings', component: Bookings, title: 'Monting Balay | Admin Bookings' },
-  { path: 'admin/products', component: Products, title: 'Monting Balay | Admin Products' },
-  { path: 'admin/settings', component: Settings, title: 'Monting Balay | Admin Settings' },
+  { path: 'admin/dashboard', component: Dasboard, title: 'Monting Balay | Admin Dashboard', canActivate: [adminAuthGuard] },
+  { path: 'admin/bookings', component: Bookings, title: 'Monting Balay | Admin Bookings', canActivate: [adminAuthGuard] },
+  { path: 'admin/products', component: Products, title: 'Monting Balay | Admin Products', canActivate: [adminAuthGuard] },
+  { path: 'admin/payments', component: Payments, title: 'Monting Balay | Admin Payments', canActivate: [adminAuthGuard] },
+  { path: 'admin/settings', component: Settings, title: 'Monting Balay | Admin Settings', canActivate: [adminAuthGuard] },
   { path: 'maintenance', component: Maintenance, title: 'Faby | Coming Soon' },
   { path: '**', component: Notfound, title: '404 | Page Not Found' },
 ];

@@ -75,22 +75,50 @@ h1
 	line-height: 1.45
 	color: #6b4f31
 
-.bank-picker
+.qr-panel
 	margin-bottom: .75rem
+	display: grid
+	gap: .65rem
 
-.bank-picker label
-	display: block
+.qr-panel label
+	display: grid
+	gap: .35rem
 	font-size: .88rem
 	font-weight: 700
-	margin-bottom: .4rem
 
-.bank-picker select
+.qr-panel input[type="text"]
 	width: 100%
 	border-radius: .62rem
 	border: 1px solid #d7b993
 	padding: .62rem .75rem
 	font-size: .92rem
 	background: #fff
+	box-sizing: border-box
+
+.qr-image
+	width: 100%
+	max-width: 14rem
+	margin: 0 auto
+	display: block
+	border: 1px solid #e1c5a3
+	border-radius: .65rem
+	background: #fff
+	padding: .5rem
+	box-sizing: border-box
+
+.receipt-preview-wrap
+	display: grid
+
+.receipt-preview
+	width: min(100%, 16rem)
+	max-height: 14rem
+	object-fit: contain
+	margin: 0 auto
+	border: 1px solid #e1c5a3
+	border-radius: .65rem
+	background: #fff
+	padding: .4rem
+	box-sizing: border-box
 
 .error-message
 	margin: 0 0 .75rem

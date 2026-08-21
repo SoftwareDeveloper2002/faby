@@ -1,13 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { get, getDatabase, ref } from 'firebase/database';
 import { LegalModalComponent, LegalModalSection } from '../../components/legal-modal/legal-modal';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
+  authDomain: 'faby-be0b9.firebaseapp.com',
+  projectId: 'faby-be0b9',
+  databaseURL: 'https://faby-be0b9-default-rtdb.asia-southeast1.firebasedatabase.app',
+  storageBucket: 'faby-be0b9.firebasestorage.app',
+  messagingSenderId: '71671731623',
+  appId: '1:71671731623:web:6df23b47797e12b9aad282',
+  measurementId: 'G-ZBZJKVWND9',
+};
+
+// Same Cloudinary account already used for product photos and the admin payment QR code.
+const CLOUDINARY_CLOUD_NAME = 'srza69qv';
+const CLOUDINARY_UPLOAD_PRESET = 'faby_admin_products';
 
 type PaymentDetails = {
   motorcycleId: string;
   motorcycleName: string;
   totalDays: number;
+  rentalSubtotal: number;
+  depositAmount: number;
+  depositCycles: number;
   totalAmount: number;
   startDate: string;
   returnDate: string;
@@ -15,7 +35,7 @@ type PaymentDetails = {
   returnPath: string;
 };
 
-const DEFAULT_PAYMONGO_API_BASE = 'https://faby.soltryxsolutions.com';
+type PaymentMethod = 'cash' | 'qr';
 
 @Component({
   selector: 'app-payment',
@@ -24,60 +44,37 @@ const DEFAULT_PAYMONGO_API_BASE = 'https://faby.soltryxsolutions.com';
   templateUrl: './payment.html',
   styleUrl: './payment.sass',
 })
-export class Payment {
+export class Payment implements OnInit {
   booking: PaymentDetails;
-  selectedMethod = 'cash';
-  selectedEwallet = 'gcash';
-  selectedBank = 'bpi';
+  selectedMethod: PaymentMethod = 'cash';
+  referenceNote = '';
   isProcessing = false;
   errorMessage = '';
   hasAcceptedPolicies = false;
   isTermsModalOpen = false;
   isPrivacyModalOpen = false;
 
-  readonly localBankOptions = [
-    { code: 'bpi', label: 'BPI' },
-    { code: 'unionbank', label: 'UnionBank' },
-    { code: 'bdo', label: 'BDO' },
-    { code: 'landbank', label: 'Landbank' },
-    { code: 'metrobank', label: 'Metrobank' },
-    { code: 'pnb', label: 'PNB' },
-    { code: 'securitybank', label: 'Security Bank' },
-    { code: 'rcbc', label: 'RCBC' },
-    { code: 'chinabank', label: 'China Bank' },
-    { code: 'eastwest', label: 'EastWest' },
-    { code: 'cimb', label: 'CIMB' },
-  ];
+  // Admin-configured payment QR + instructions (Settings > Payment QR Code).
+  qrCodeUrl = '';
+  paymentInstructions = '';
+  isLoadingQrCode = true;
 
-  readonly internationalBankOptions = [
-    { code: 'hsbc', label: 'HSBC' },
-    { code: 'citibank', label: 'Citibank' },
-    { code: 'standardchartered', label: 'Standard Chartered' },
-    { code: 'maybank', label: 'Maybank' },
-    { code: 'dbs', label: 'DBS' },
-    { code: 'deutschebank', label: 'Deutsche Bank' },
-  ];
-
-  readonly ewalletOptions = [
-    { code: 'gcash', label: 'GCash' },
-    { code: 'maya', label: 'Maya' },
-    { code: 'paymaya', label: 'Maya' },
-    { code: 'grab_pay', label: 'GrabPay' },
-  ];
+  receiptPreview = '';
+  private receiptFile: File | null = null;
 
   readonly termsSections: LegalModalSection[] = [
     {
       heading: 'Payment Authorization',
       paragraphs: [
         'By continuing, you confirm that the payment method selected belongs to you or is authorized for this booking.',
-        'All payment attempts must use valid account details and follow provider security checks.',
+        'For QR transfers, you are responsible for sending the exact total amount shown and for uploading a clear, unedited receipt screenshot.',
       ],
     },
     {
       heading: 'Booking and Charge Terms',
       paragraphs: [
-        'Confirmed payments are tied to your booking details, including selected item, dates, and total amount.',
-        'Cancellations, adjustments, and refunds are processed under Monting Balay policies and payment provider rules.',
+        'Confirmed payments are tied to your booking details, including selected item, dates, and total amount (rental plus any applicable deposit).',
+        'QR transfer bookings are held as pending until an admin verifies your receipt. Cancellations, adjustments, and refunds are processed under Monting Balay policies.',
       ],
     },
   ];
@@ -86,8 +83,8 @@ export class Payment {
     {
       heading: 'Payment Data Handling',
       paragraphs: [
-        'We store booking and payment-related metadata needed to complete and verify your reservation.',
-        'Sensitive payment processing is handled through secure third-party checkout channels such as PayMongo.',
+        'We store booking and payment-related metadata needed to complete and verify your reservation, including the receipt screenshot you upload for QR transfers.',
+        'Your receipt image is only used to verify this booking and is visible to Monting Balay admins during review.',
       ],
     },
     {
@@ -109,6 +106,9 @@ export class Payment {
       motorcycleId: String(params['motorcycleId'] ?? ''),
       motorcycleName: String(params['motorcycleName'] ?? 'Motorcycle Unit'),
       totalDays: Number(params['totalDays'] ?? 0),
+      rentalSubtotal: Number(params['rentalSubtotal'] ?? params['totalAmount'] ?? 0),
+      depositAmount: Number(params['depositAmount'] ?? 0),
+      depositCycles: Number(params['depositCycles'] ?? 0),
       totalAmount: Number(params['totalAmount'] ?? 0),
       startDate: String(params['startDate'] ?? ''),
       returnDate: String(params['returnDate'] ?? ''),
@@ -121,27 +121,57 @@ export class Payment {
     }
   }
 
+  async ngOnInit(): Promise<void> {
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      const snapshot = await get(ref(db, 'settings/payment'));
+      const data = (snapshot.val() ?? {}) as { qrCodeUrl?: string; instructions?: string };
+      this.qrCodeUrl = String(data.qrCodeUrl ?? '');
+      this.paymentInstructions = String(data.instructions ?? '');
+    } catch {
+      this.qrCodeUrl = '';
+      this.paymentInstructions = '';
+    } finally {
+      this.isLoadingQrCode = false;
+    }
+  }
+
+  onReceiptSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.errorMessage = '';
+
+    if (!file) {
+      this.receiptFile = null;
+      this.receiptPreview = '';
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please upload a valid image (screenshot or photo) of your receipt.';
+      this.receiptFile = null;
+      this.receiptPreview = '';
+      input.value = '';
+      return;
+    }
+
+    this.receiptFile = file;
+    this.receiptPreview = URL.createObjectURL(file);
+  }
+
   async confirmPayment(): Promise<void> {
     this.errorMessage = '';
 
     if (!this.hasAcceptedPolicies) {
-      this.errorMessage = 'You must agree to the Terms and Privacy Policy before confirming payment.';
+      this.errorMessage = 'You must agree to the Terms and Conditions and Privacy Policy before confirming payment.';
       return;
     }
-
-    const checkoutMethod = this.getCheckoutMethod();
-    localStorage.setItem('pendingPaymentRecord', JSON.stringify(this.buildPendingPaymentRecord(checkoutMethod)));
 
     if (this.selectedMethod === 'cash') {
       await this.router.navigate(['/payment-success'], {
         queryParams: {
-          motorcycleId: this.booking.motorcycleId,
-          motorcycleName: this.booking.motorcycleName,
-          totalDays: this.booking.totalDays,
-          totalAmount: this.booking.totalAmount,
-          startDate: this.booking.startDate,
-          returnDate: this.booking.returnDate,
-          bookingType: this.booking.bookingType,
+          ...this.booking,
           paymentMethod: 'cash',
           bank: '',
           source: 'cash_on_arrival',
@@ -150,11 +180,26 @@ export class Payment {
       return;
     }
 
+    if (!this.receiptFile) {
+      this.errorMessage = 'Please upload a screenshot of your payment receipt.';
+      return;
+    }
+
     this.isProcessing = true;
 
     try {
-      const checkoutUrl = await this.createPayMongoCheckoutUrl();
-      window.location.href = checkoutUrl;
+      const receiptUrl = await this.uploadReceipt(this.receiptFile);
+
+      await this.router.navigate(['/payment-success'], {
+        queryParams: {
+          ...this.booking,
+          paymentMethod: 'qr_transfer',
+          bank: '',
+          source: 'qr_transfer_review',
+          receiptUrl,
+          referenceNote: this.referenceNote.trim(),
+        },
+      });
     } catch (error) {
       this.errorMessage = this.getErrorMessage(error);
     } finally {
@@ -162,145 +207,25 @@ export class Payment {
     }
   }
 
-  private buildPendingPaymentRecord(checkoutMethod: string): Record<string, string | number> {
-    return {
-      motorcycleId: this.booking.motorcycleId,
-      motorcycleName: this.booking.motorcycleName,
-      totalDays: this.booking.totalDays,
-      totalAmount: this.booking.totalAmount,
-      startDate: this.booking.startDate,
-      returnDate: this.booking.returnDate,
-      bookingType: this.booking.bookingType,
-      paymentMethod: checkoutMethod,
-      bank: this.selectedMethod === 'bank' ? this.selectedBank : '',
-      source: checkoutMethod === 'cash' ? 'cash_on_arrival' : 'paymongo_checkout',
-    };
-  }
+  private async uploadReceipt(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'payment-receipts');
+    formData.append('public_id', `receipt-${Date.now()}`);
 
-  private async createPayMongoCheckoutUrl(): Promise<string> {
-    const checkoutMethod = this.getCheckoutMethod();
-
-    const payload = {
-      amount: this.booking.totalAmount,
-      description: `${this.booking.motorcycleName} rental (${this.booking.totalDays} day/s)`,
-      method: checkoutMethod,
-      bank: this.selectedMethod === 'bank' ? this.selectedBank : null,
-      metadata: {
-        motorcycleId: this.booking.motorcycleId,
-        motorcycleName: this.booking.motorcycleName,
-        totalDays: this.booking.totalDays,
-        startDate: this.booking.startDate,
-        returnDate: this.booking.returnDate,
-      },
-    };
-
-    const candidateUrls = this.getCheckoutEndpointCandidates();
-    let response: Response | null = null;
-    const attempted: string[] = [];
-
-    for (const url of candidateUrls) {
-      const candidateResponse = await this.requestCheckout(url, payload);
-      attempted.push(url);
-
-      if (!candidateResponse) {
-        continue;
-      }
-
-      if (candidateResponse.ok) {
-        response = candidateResponse;
-        break;
-      }
-
-      if (!this.shouldTryNextCandidate(candidateResponse.status)) {
-        response = candidateResponse;
-        break;
-      }
-    }
-
-    if (!response) {
-      throw new Error(`Unable to reach payment API. Checked: ${attempted.join(', ')}. Ensure your backend is running and reachable at https://faby.soltryxsolutions.com, or run localStorage.removeItem('paymongoApiBaseUrl') to clear a stale override.`);
-    }
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    });
 
     if (!response.ok) {
-      const errorMessage = await this.extractErrorMessage(response);
-      throw new Error(errorMessage);
+      const errorBody = await response.json().catch(() => null);
+      throw new Error(errorBody?.error?.message ?? 'Receipt upload failed. Please try again.');
     }
 
-    const result = (await response.json()) as { checkoutUrl?: string };
-
-    if (!result.checkoutUrl) {
-      throw new Error('PayMongo checkout URL is missing from the server response.');
-    }
-
-    return result.checkoutUrl;
-  }
-
-  private async extractErrorMessage(response: Response): Promise<string> {
-    const contentType = response.headers.get('content-type') || '';
-
-    if (contentType.includes('application/json')) {
-      try {
-        const errorBody = (await response.json()) as { message?: string };
-        if (errorBody?.message) {
-          return errorBody.message;
-        }
-      } catch {
-        // Fallback below.
-      }
-    }
-
-    if (response.status === 404) {
-      return 'Payment API route not found. If deployed on Firebase Hosting, set localStorage.paymongoApiBaseUrl to your public backend URL.';
-    }
-
-    return 'Unable to initialize PayMongo checkout. Please try again.';
-  }
-
-  private async requestCheckout(url: string, payload: object): Promise<Response | null> {
-    try {
-      return await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      return null;
-    }
-  }
-
-  private shouldTryNextCandidate(status: number): boolean {
-    if (status === 404) {
-      return true;
-    }
-
-    if (status >= 500) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private getCheckoutEndpointCandidates(): string[] {
-    const endpointPath = '/api/paymongo/checkout-session';
-    const candidates: string[] = [];
-
-    const configuredBase = localStorage.getItem('paymongoApiBaseUrl')?.trim();
-    if (configuredBase) {
-      candidates.push(this.composeEndpoint(configuredBase, endpointPath));
-    }
-
-    candidates.push(this.composeEndpoint(DEFAULT_PAYMONGO_API_BASE, endpointPath));
-
-    candidates.push(endpointPath);
-
-    return [...new Set(candidates)];
-  }
-
-  private composeEndpoint(baseUrl: string, endpointPath: string): string {
-    const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    return `${normalizedBase}${endpointPath}`;
+    const data = await response.json();
+    return data.secure_url as string;
   }
 
   private getErrorMessage(error: unknown): string {
@@ -308,23 +233,7 @@ export class Payment {
       return String((error as { message: unknown }).message);
     }
 
-    return 'Payment initialization failed. Please try again.';
-  }
-
-  get selectedEwalletLabel(): string {
-    return this.ewalletOptions.find((wallet) => wallet.code === this.selectedEwallet)?.label || 'your e-wallet';
-  }
-
-  private getCheckoutMethod(): string {
-    if (this.selectedMethod === 'ewallet') {
-      if (this.selectedEwallet === 'maya') {
-        return 'paymaya';
-      }
-
-      return this.selectedEwallet;
-    }
-
-    return this.selectedMethod;
+    return 'Unable to submit your payment right now. Please try again.';
   }
 
   openTermsModal(): void {

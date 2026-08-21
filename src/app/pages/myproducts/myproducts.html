@@ -41,9 +41,15 @@
             <p><span>Saved:</span><strong>{{ payment.createdAt | date:'medium' }}</strong></p>
           </div>
 
-          <div class="actions">
-            <button type="button" class="print-btn" (click)="printReceipt(payment)">Print Receipt</button>
-          </div>
+          @if (payment.isSubmission && payment.submissionStatus === 'rejected' && payment.adminNote) {
+            <p class="reject-note">Reason: "{{ payment.adminNote }}"</p>
+          }
+
+          @if (!payment.isSubmission) {
+            <div class="actions">
+              <button type="button" class="print-btn" (click)="printReceipt(payment)">Print Receipt</button>
+            </div>
+          }
         </article>
       }
     </section>

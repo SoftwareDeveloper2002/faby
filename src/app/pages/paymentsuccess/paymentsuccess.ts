@@ -16,20 +16,22 @@ const firebaseConfig = {
   measurementId: 'G-ZBZJKVWND9',
 };
 
-type SuccessfulPaymentRecord = {
-  email: string;
-  motorcycleId: string;
-  motorcycleName: string;
-  totalDays: number;
-  totalAmount: number;
-  startDate: string;
-  returnDate: string;
-  bookingType: string;
-  paymentMethod: string;
-  bank: string;
-  status: 'success';
-  source: 'paymongo_checkout' | 'cash_on_arrival';
-  createdAt: string;
+type PendingPayment = {
+  motorcycleId?: string;
+  motorcycleName?: string;
+  totalDays?: number;
+  rentalSubtotal?: number;
+  depositAmount?: number;
+  depositCycles?: number;
+  totalAmount?: number;
+  startDate?: string;
+  returnDate?: string;
+  bookingType?: string;
+  paymentMethod?: string;
+  bank?: string;
+  source?: string;
+  receiptUrl?: string;
+  referenceNote?: string;
 };
 
 @Component({
@@ -42,6 +44,8 @@ export class Paymentsuccess implements OnInit {
   isSaving = true;
   saveError = '';
   saveSuccess = '';
+  /** True when this booking is a QR-transfer submission awaiting admin review, not yet a confirmed booking. */
+  isPendingReview = false;
 
   constructor(private readonly route: ActivatedRoute) {}
 
@@ -50,29 +54,35 @@ export class Paymentsuccess implements OnInit {
     const pendingPaymentRaw = localStorage.getItem('pendingPaymentRecord');
     const pendingPayment = pendingPaymentRaw ? this.parsePendingPayment(pendingPaymentRaw) : null;
 
+    const read = <K extends keyof PendingPayment>(key: K): PendingPayment[K] | undefined =>
+      (params[key] as PendingPayment[K] | undefined) ?? pendingPayment?.[key];
+
+    const source = String(read('source') ?? '').trim();
+    const paymentMethod = String(read('paymentMethod') ?? '').trim();
+    this.isPendingReview = source === 'qr_transfer_review';
+
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const userEmail = auth.currentUser?.email || localStorage.getItem('fabyUserEmail') || '';
 
-    const record: SuccessfulPaymentRecord = {
+    const shared = {
       email: String(params['email'] ?? userEmail),
-      motorcycleId: String(params['motorcycleId'] ?? pendingPayment?.motorcycleId ?? ''),
-      motorcycleName: String(params['motorcycleName'] ?? pendingPayment?.motorcycleName ?? 'Motorcycle Unit'),
-      totalDays: Number(params['totalDays'] ?? pendingPayment?.totalDays ?? 0),
-      totalAmount: Number(params['totalAmount'] ?? pendingPayment?.totalAmount ?? 0),
-      startDate: String(params['startDate'] ?? pendingPayment?.startDate ?? ''),
-      returnDate: String(params['returnDate'] ?? pendingPayment?.returnDate ?? ''),
-      bookingType: String(params['bookingType'] ?? pendingPayment?.bookingType ?? 'motorcycle'),
-      paymentMethod: String(params['paymentMethod'] ?? pendingPayment?.paymentMethod ?? ''),
-      bank: String(params['bank'] ?? pendingPayment?.bank ?? ''),
-      status: 'success',
-      source: String(params['source'] ?? pendingPayment?.source ?? '').trim() === 'cash_on_arrival' || String(params['paymentMethod'] ?? pendingPayment?.paymentMethod ?? '').trim() === 'cash'
-        ? 'cash_on_arrival'
-        : 'paymongo_checkout',
+      motorcycleId: String(read('motorcycleId') ?? ''),
+      motorcycleName: String(read('motorcycleName') ?? 'Motorcycle Unit'),
+      totalDays: Number(read('totalDays') ?? 0),
+      rentalSubtotal: Number(read('rentalSubtotal') ?? 0),
+      depositAmount: Number(read('depositAmount') ?? 0),
+      depositCycles: Number(read('depositCycles') ?? 0),
+      totalAmount: Number(read('totalAmount') ?? 0),
+      startDate: String(read('startDate') ?? ''),
+      returnDate: String(read('returnDate') ?? ''),
+      bookingType: String(read('bookingType') ?? 'motorcycle'),
+      paymentMethod,
+      bank: String(read('bank') ?? ''),
       createdAt: new Date().toISOString(),
     };
 
-    if (!record.totalAmount || !record.totalDays) {
+    if (!shared.totalAmount || !shared.totalDays) {
       this.isSaving = false;
       this.saveError = 'Payment details are incomplete, so this transaction was not saved.';
       return;
@@ -80,12 +90,34 @@ export class Paymentsuccess implements OnInit {
 
     try {
       const db = getDatabase(app, firebaseConfig.databaseURL);
-      const paymentsRef = ref(db, 'successfulPayments');
-      const newPaymentRef = push(paymentsRef);
 
-      await set(newPaymentRef, record);
-      localStorage.removeItem('pendingPaymentRecord');
-      this.saveSuccess = `Payment saved successfully at successfulPayments/${newPaymentRef.key ?? 'N/A'}`;
+      if (this.isPendingReview) {
+        const submissionsRef = ref(db, 'paymentSubmissions');
+        const newSubmissionRef = push(submissionsRef);
+
+        await set(newSubmissionRef, {
+          ...shared,
+          receiptUrl: String(read('receiptUrl') ?? ''),
+          referenceNote: String(read('referenceNote') ?? ''),
+          status: 'pending',
+          adminNote: '',
+        });
+
+        localStorage.removeItem('pendingPaymentRecord');
+        this.saveSuccess = 'Your payment proof was submitted and is pending admin review.';
+      } else {
+        const paymentsRef = ref(db, 'successfulPayments');
+        const newPaymentRef = push(paymentsRef);
+
+        await set(newPaymentRef, {
+          ...shared,
+          status: 'success',
+          source: source === 'cash_on_arrival' || paymentMethod === 'cash' ? 'cash_on_arrival' : source || 'cash_on_arrival',
+        });
+
+        localStorage.removeItem('pendingPaymentRecord');
+        this.saveSuccess = `Payment saved successfully at successfulPayments/${newPaymentRef.key ?? 'N/A'}`;
+      }
     } catch (error) {
       if (error && typeof error === 'object') {
         const firebaseError = error as { code?: unknown; message?: unknown };
@@ -100,10 +132,9 @@ export class Paymentsuccess implements OnInit {
     }
   }
 
-  private parsePendingPayment(raw: string): Partial<SuccessfulPaymentRecord> | null {
+  private parsePendingPayment(raw: string): PendingPayment | null {
     try {
-      const parsed = JSON.parse(raw) as Partial<SuccessfulPaymentRecord>;
-      return parsed;
+      return JSON.parse(raw) as PendingPayment;
     } catch {
       return null;
     }

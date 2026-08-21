@@ -16,7 +16,8 @@
 	color: var(--ink)
 
 .hero,
-.settings-grid
+.settings-grid,
+.deposit-panel
 	max-width: 72rem
 	margin: 0 auto
 
@@ -44,6 +45,9 @@ h1
 	display: grid
 	gap: .75rem
 	grid-template-columns: repeat(3, minmax(0, 1fr))
+
+.deposit-panel
+	margin-top: .75rem
 
 .password-panel
 	max-width: 72rem
@@ -75,13 +79,15 @@ h1
 	display: grid
 	gap: .75rem
 
-.password-form label
+label
 	display: grid
 	gap: .35rem
 	font-size: .88rem
 	font-weight: 700
 
-.password-form input
+input,
+select,
+textarea
 	width: 100%
 	padding: .62rem .7rem
 	border: 1px solid var(--line)
@@ -90,11 +96,17 @@ h1
 	background: #fff
 	color: var(--ink)
 	transition: border-color .15s ease, box-shadow .15s ease
+	box-sizing: border-box
 
-.password-form input:focus
+input:focus,
+select:focus,
+textarea:focus
 	outline: none
 	border-color: var(--accent)
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)
+
+textarea
+	resize: vertical
 
 .message
 	margin: 0
@@ -111,7 +123,7 @@ h1
 	background: #e5f6e9
 	color: #1f6d31
 
-.password-form button
+button
 	border: 0
 	border-radius: .62rem
 	padding: .72rem .9rem
@@ -122,15 +134,121 @@ h1
 	cursor: pointer
 	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
 
-.password-form button:hover:not([disabled])
+button:hover:not([disabled])
 	transform: translateY(-1px)
 	box-shadow: 0 8px 16px rgba(135, 74, 33, .24)
 
-.password-form button[disabled]
+button:focus-visible
+	outline: 2px solid #f4d5b0
+	outline-offset: 2px
+
+button[disabled]
 	opacity: .7
 	cursor: not-allowed
 	transform: none
 
+.btn-secondary
+	background: #efe2d0
+	color: #6b3f20
+
+.btn-secondary.small
+	padding: .4rem .62rem
+	font-size: .78rem
+
+.payment-card
+	display: grid
+	gap: .7rem
+	align-content: start
+
+.qr-row
+	display: grid
+	grid-template-columns: 9rem 1fr
+	gap: .85rem
+	align-items: start
+
+.qr-preview-wrap
+	width: 9rem
+	height: 9rem
+
+.qr-preview
+	width: 100%
+	height: 100%
+	object-fit: contain
+	background: #fff
+	border: 1px solid var(--line)
+	border-radius: .6rem
+	padding: .4rem
+	box-sizing: border-box
+
+.qr-placeholder
+	width: 100%
+	height: 100%
+	display: grid
+	place-items: center
+	text-align: center
+	padding: .4rem
+	border: 1px dashed var(--line)
+	border-radius: .6rem
+	background: #fffdf8
+	color: var(--ink-soft)
+	font-size: .74rem
+	font-weight: 700
+
+.qr-controls
+	display: grid
+	gap: .55rem
+	align-content: start
+
+.deposit-copy
+	margin-bottom: .8rem !important
+
+.deposit-table
+	display: grid
+	gap: .5rem
+	overflow-x: auto
+
+.deposit-row
+	display: grid
+	grid-template-columns: 1.6fr 1fr 1fr 1fr auto
+	gap: .6rem
+	align-items: center
+	min-width: 38rem
+
+.deposit-head
+	font-size: .76rem
+	font-weight: 800
+	text-transform: uppercase
+	letter-spacing: .06em
+	color: var(--ink-soft)
+	padding: 0 .1rem
+
+.item-cell
+	display: grid
+	gap: .25rem
+
+.item-chip
+	display: inline-block
+	width: fit-content
+	padding: .12rem .4rem
+	border-radius: 999px
+	font-size: .68rem
+	font-weight: 800
+	text-transform: uppercase
+	letter-spacing: .05em
+	background: #f1dfc8
+	color: #7a461e
+
+.empty
+	margin: 0
+	color: var(--ink-soft)
+
 @media (max-width: 980px)
 	.settings-grid
 		grid-template-columns: 1fr
+
+	.qr-row
+		grid-template-columns: 1fr
+
+	.qr-preview-wrap
+		width: 100%
+		height: 10rem

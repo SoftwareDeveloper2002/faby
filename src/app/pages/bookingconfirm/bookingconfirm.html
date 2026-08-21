@@ -9,7 +9,19 @@
       <p><span>Start date:</span> <strong>{{ booking.startDate }}</strong></p>
       <p><span>Return date:</span> <strong>{{ booking.returnDate }}</strong></p>
       <p><span>Total {{ booking.bookingType === 'room' ? 'nights' : 'days' }}:</span> <strong>{{ booking.totalDays }}</strong></p>
-      <p class="total"><span>Total amount:</span> <strong>PHP {{ booking.totalAmount }}</strong></p>
+
+      <p><span>Rental subtotal:</span> <strong>PHP {{ breakdown.rentalSubtotal }}</strong></p>
+
+      @if (isLoadingDeposit) {
+        <p><span>Deposit:</span> <strong>Checking...</strong></p>
+      } @else if (breakdown.depositAmount > 0) {
+        <p>
+          <span>Deposit{{ breakdown.depositCycles > 1 ? ' (' + breakdown.depositCycles + ' charges)' : '' }}:</span>
+          <strong>PHP {{ breakdown.depositAmount }}</strong>
+        </p>
+      }
+
+      <p class="total"><span>Total amount:</span> <strong>PHP {{ breakdown.totalAmount }}</strong></p>
       @if (booking.bookingType === 'motorcycle') {
         <p class="note">Includes 2 helmets</p>
       }
@@ -17,7 +29,7 @@
 
     <div class="actions">
       <button type="button" class="btn-secondary" [routerLink]="booking.returnPath">Back</button>
-      <button type="button" class="btn-primary" (click)="proceedToPayment()">Proceed to Payment</button>
+      <button type="button" class="btn-primary" [disabled]="isLoadingDeposit" (click)="proceedToPayment()">Proceed to Payment</button>
     </div>
   </section>
 </main>

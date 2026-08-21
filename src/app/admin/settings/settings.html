@@ -13,14 +13,131 @@
 			<p>Control lead time, cancellation window, and date validation rules for rentals.</p>
 		</article>
 
-		<article class="card">
-			<h2>Payment Preferences</h2>
-			<p>Choose enabled channels and fallback methods for checkout flows.</p>
+		<article class="card payment-card" aria-labelledby="payment-settings-title">
+			<h2 id="payment-settings-title">Payment QR Code</h2>
+			<p>Customers scan this to pay, then upload a receipt screenshot for you to review in Admin Payments.</p>
+
+			<div class="qr-row">
+				<div class="qr-preview-wrap">
+					@if (qrCodePreview || qrCodeUrl) {
+						<img class="qr-preview" [src]="qrCodePreview || qrCodeUrl" alt="Payment QR code" />
+					} @else {
+						<div class="qr-placeholder">No QR code uploaded yet</div>
+					}
+				</div>
+
+				<div class="qr-controls">
+					<label>
+						Upload QR code image
+						<input type="file" accept="image/*" (change)="onQrCodeSelected($event)" />
+					</label>
+					<button type="button" [disabled]="isUploadingQr" (click)="saveQrCode()">
+						{{ isUploadingQr ? 'Uploading...' : 'Save QR Code' }}
+					</button>
+				</div>
+			</div>
+
+			<label>
+				Instructions shown to customers
+				<textarea
+					rows="3"
+					[(ngModel)]="paymentInstructions"
+					placeholder="e.g. Send payment via GCash to 0917-000-0000 (Juan Dela Cruz), then upload your receipt screenshot below."
+				></textarea>
+			</label>
+			<button type="button" class="btn-secondary" [disabled]="isSavingInstructions" (click)="saveInstructions()">
+				{{ isSavingInstructions ? 'Saving...' : 'Save Instructions' }}
+			</button>
+
+			@if (paymentSettingsError) {
+				<p class="message error">{{ paymentSettingsError }}</p>
+			}
+
+			@if (paymentSettingsSuccess) {
+				<p class="message success">{{ paymentSettingsSuccess }}</p>
+			}
 		</article>
 
 		<article class="card">
 			<h2>Notification Settings</h2>
 			<p>Configure email notifications for new bookings and payment confirmations.</p>
+		</article>
+	</section>
+
+	<section class="deposit-panel" aria-labelledby="deposit-settings-title">
+		<article class="card">
+			<h2 id="deposit-settings-title">Deposit Settings</h2>
+			<p class="deposit-copy">
+				Set a refundable deposit per rental item. <strong>One-time</strong> charges the deposit once no matter how long
+				the rental is. <strong>Recurring</strong> charges it again every N days — e.g. a 5-day interval on a 2-week
+				(14-day) rental charges 3 times (any partial extra period still counts as one more charge).
+			</p>
+
+			@if (depositError) {
+				<p class="message error">{{ depositError }}</p>
+			}
+
+			@if (depositSuccess) {
+				<p class="message success">{{ depositSuccess }}</p>
+			}
+
+			@if (isLoadingDeposits) {
+				<p class="empty">Loading products...</p>
+			} @else if (depositRows.length === 0) {
+				<p class="empty">Add products in Admin Products first, then set their deposit rules here.</p>
+			} @else {
+				<div class="deposit-table" role="table" aria-label="Deposit settings per product">
+					<div class="deposit-row deposit-head" role="row">
+						<span role="columnheader">Item</span>
+						<span role="columnheader">Deposit (PHP)</span>
+						<span role="columnheader">Type</span>
+						<span role="columnheader">Interval (days)</span>
+						<span role="columnheader"></span>
+					</div>
+
+					@for (row of depositRows; track row.productId) {
+						<div class="deposit-row" role="row">
+							<span class="item-cell" role="cell">
+								<strong>{{ row.title }}</strong>
+								<span class="item-chip">{{ getCategoryLabel(row.category) }}</span>
+							</span>
+
+							<span role="cell">
+								<input
+									type="number"
+									min="0"
+									[(ngModel)]="row.amount"
+									placeholder="0 = none"
+									aria-label="Deposit amount"
+								/>
+							</span>
+
+							<span role="cell">
+								<select [(ngModel)]="row.type" (ngModelChange)="onDepositTypeChanged(row)" aria-label="Deposit type">
+									<option value="one_time">One-time</option>
+									<option value="recurring">Recurring</option>
+								</select>
+							</span>
+
+							<span role="cell">
+								<input
+									type="number"
+									min="1"
+									[(ngModel)]="row.intervalDays"
+									[disabled]="row.type !== 'recurring'"
+									aria-label="Recurring interval in days"
+								/>
+							</span>
+
+							<span role="cell">
+								<button type="button" class="btn-secondary small" [disabled]="row.isSaving" (click)="saveDepositRow(row)">
+									{{ row.isSaving ? 'Saving...' : 'Save' }}
+								</button>
+							</span>
+						</div>
+					}
+				</div>
+			}
 		</article>
 	</section>
 

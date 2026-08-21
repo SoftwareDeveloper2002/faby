@@ -65,6 +65,15 @@ button
 	font-size: .93rem
 	font-weight: 700
 	cursor: pointer
+	transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease
+
+button:hover:not([disabled])
+	transform: translateY(-1px)
+
+button[disabled]
+	opacity: .65
+	cursor: not-allowed
+	transform: none
 
 .btn-primary
 	background: #9a5d2d

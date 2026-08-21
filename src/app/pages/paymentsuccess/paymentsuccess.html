@@ -1,10 +1,18 @@
 <main class="result-page success" aria-labelledby="success-title">
   <section class="result-card">
     <p class="eyebrow">Payment Status</p>
-    <h1 id="success-title">Payment Successful</h1>
-    <p class="message">
-      Your booking payment was completed successfully. Thank you for booking with Monting Balay.
-    </p>
+    @if (isPendingReview) {
+      <h1 id="success-title">Payment Proof Submitted</h1>
+      <p class="message">
+        Thanks! Your receipt was submitted and your booking is <strong>pending admin review</strong>. You'll see it
+        confirmed in My Products once an admin verifies your payment.
+      </p>
+    } @else {
+      <h1 id="success-title">Payment Successful</h1>
+      <p class="message">
+        Your booking payment was completed successfully. Thank you for booking with Monting Balay.
+      </p>
+    }
 
     @if (isSaving) {
       <p class="status saving">Saving payment record...</p>

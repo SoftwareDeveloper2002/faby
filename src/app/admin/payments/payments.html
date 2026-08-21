@@ -1,0 +1,103 @@
+<app-admin-navbar></app-admin-navbar>
+
+<main class="admin-payments" aria-labelledby="payments-title">
+	<section class="hero">
+		<div>
+			<p class="eyebrow">Admin Payments</p>
+			<h1 id="payments-title">Payment Receipt Review</h1>
+			<p class="hero-copy">Review customer receipt screenshots and approve or reject each QR payment.</p>
+		</div>
+
+		@if (pendingCount > 0) {
+			<p class="pending-badge">{{ pendingCount }} pending review</p>
+		}
+	</section>
+
+	@if (errorMessage) {
+		<p class="message error page-message">{{ errorMessage }}</p>
+	}
+
+	@if (successMessage) {
+		<p class="message success page-message">{{ successMessage }}</p>
+	}
+
+	<section class="toolbar" aria-label="Filter submissions">
+		<div class="filter-chip-group" role="group" aria-label="Filter by status">
+			<button type="button" class="filter-chip" [class.active]="statusFilter === 'pending'" (click)="statusFilter = 'pending'">Pending</button>
+			<button type="button" class="filter-chip" [class.active]="statusFilter === 'approved'" (click)="statusFilter = 'approved'">Approved</button>
+			<button type="button" class="filter-chip" [class.active]="statusFilter === 'rejected'" (click)="statusFilter = 'rejected'">Rejected</button>
+			<button type="button" class="filter-chip" [class.active]="statusFilter === 'all'" (click)="statusFilter = 'all'">All</button>
+		</div>
+	</section>
+
+	<section class="list-panel" aria-label="Payment submissions">
+		@if (isLoading) {
+			<p class="empty">Loading submissions...</p>
+		} @else if (filteredSubmissions.length === 0) {
+			<p class="empty">No {{ statusFilter === 'all' ? '' : statusFilter }} submissions right now.</p>
+		} @else {
+			<div class="submission-grid">
+				@for (submission of filteredSubmissions; track submission.id) {
+					<article class="submission-card">
+						<button type="button" class="receipt-thumb" (click)="openReceipt(submission.receiptUrl)" [disabled]="!submission.receiptUrl">
+							@if (submission.receiptUrl) {
+								<img [src]="submission.receiptUrl" [alt]="'Receipt for ' + submission.motorcycleName" />
+							} @else {
+								<span class="no-receipt">No receipt image</span>
+							}
+						</button>
+
+						<div class="submission-body">
+							<div class="status-row">
+								<p class="chip status-pill" [class]="submission.status">{{ submission.status }}</p>
+								<p class="chip">{{ getBookingTypeLabel(submission.bookingType) }}</p>
+							</div>
+
+							<h3>{{ submission.motorcycleName }}</h3>
+							<p class="customer">{{ submission.email || 'Unknown customer' }}</p>
+							<p class="dates">{{ submission.startDate }} &rarr; {{ submission.returnDate }} &middot; {{ submission.totalDays }} day(s)</p>
+
+							<div class="breakdown">
+								<p><span>Rental subtotal</span><strong>{{ formatCurrency(submission.rentalSubtotal) }}</strong></p>
+								@if (submission.depositAmount > 0) {
+									<p>
+										<span>Deposit{{ submission.depositCycles > 1 ? ' ×' + submission.depositCycles : '' }}</span>
+										<strong>{{ formatCurrency(submission.depositAmount) }}</strong>
+									</p>
+								}
+								<p class="total"><span>Total</span><strong>{{ formatCurrency(submission.totalAmount) }}</strong></p>
+							</div>
+
+							@if (submission.referenceNote) {
+								<p class="reference">Note from customer: "{{ submission.referenceNote }}"</p>
+							}
+
+							@if (submission.adminNote) {
+								<p class="reference">Your note: "{{ submission.adminNote }}"</p>
+							}
+
+							@if (submission.status === 'pending') {
+								<div class="card-actions">
+									<button type="button" class="action-approve" [disabled]="processingId === submission.id" (click)="approve(submission)">
+										{{ processingId === submission.id ? 'Working...' : 'Approve' }}
+									</button>
+									<button type="button" class="action-reject" [disabled]="processingId === submission.id" (click)="reject(submission)">
+										Reject
+									</button>
+								</div>
+							}
+						</div>
+					</article>
+				}
+			</div>
+		}
+	</section>
+</main>
+
+@if (activeReceiptUrl) {
+	<div class="modal-backdrop" (click)="closeReceipt()" aria-hidden="true"></div>
+	<section class="receipt-modal" role="dialog" aria-modal="true" aria-label="Receipt image">
+		<button type="button" class="modal-close" (click)="closeReceipt()">Close</button>
+		<img [src]="activeReceiptUrl" alt="Full-size payment receipt" />
+	</section>
+}

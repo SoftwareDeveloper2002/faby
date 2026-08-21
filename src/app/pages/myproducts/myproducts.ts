@@ -31,6 +31,10 @@ type PaymentItem = {
   bank: string;
   createdAt: string;
   bookingType?: string;
+  /** True for a QR-transfer receipt still awaiting admin review (not yet a confirmed booking). */
+  isSubmission?: boolean;
+  submissionStatus?: 'pending' | 'rejected';
+  adminNote?: string;
 };
 
 @Component({
@@ -235,17 +239,41 @@ export class Myproducts implements OnInit {
       const db = getDatabase(app, firebaseConfig.databaseURL);
       const paymentsRef = ref(db, 'successfulPayments');
       const paymentsQuery = query(paymentsRef, orderByChild('email'), equalTo(this.userEmail));
-      const snapshot = await get(paymentsQuery);
+      const submissionsRef = ref(db, 'paymentSubmissions');
+      const submissionsQuery = query(submissionsRef, orderByChild('email'), equalTo(this.userEmail));
 
-      if (!snapshot.exists()) {
-        this.payments = [];
-        return;
-      }
+      const [paymentsSnapshot, submissionsSnapshot] = await Promise.all([get(paymentsQuery), get(submissionsQuery)]);
 
-      const rawData = snapshot.val() as Record<string, Omit<PaymentItem, 'id'>>;
-      this.payments = Object.entries(rawData)
-        .map(([id, value]) => ({ id, ...value }))
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const confirmed: PaymentItem[] = paymentsSnapshot.exists()
+        ? Object.entries(paymentsSnapshot.val() as Record<string, Omit<PaymentItem, 'id'>>).map(([id, value]) => ({ id, ...value }))
+        : [];
+
+      // Only surface QR receipts still pending or rejected — approved ones already became a
+      // "successfulPayments" record above, so including them again would double-count.
+      const pendingOrRejected: PaymentItem[] = submissionsSnapshot.exists()
+        ? Object.entries(submissionsSnapshot.val() as Record<string, Record<string, unknown>>)
+            .filter(([, value]) => value['status'] === 'pending' || value['status'] === 'rejected')
+            .map(([id, value]) => ({
+              id,
+              email: String(value['email'] ?? ''),
+              motorcycleName: String(value['motorcycleName'] ?? 'Rental item'),
+              totalDays: Number(value['totalDays'] ?? 0),
+              totalAmount: Number(value['totalAmount'] ?? 0),
+              startDate: String(value['startDate'] ?? ''),
+              returnDate: String(value['returnDate'] ?? ''),
+              paymentMethod: String(value['paymentMethod'] ?? 'qr_transfer'),
+              bank: String(value['bank'] ?? ''),
+              createdAt: String(value['createdAt'] ?? ''),
+              bookingType: String(value['bookingType'] ?? ''),
+              isSubmission: true,
+              submissionStatus: value['status'] as 'pending' | 'rejected',
+              adminNote: String(value['adminNote'] ?? ''),
+            }))
+        : [];
+
+      this.payments = [...confirmed, ...pendingOrRejected].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
     } catch (error) {
       if (error && typeof error === 'object' && 'message' in error) {
         this.errorMessage = String((error as { message: unknown }).message);
@@ -258,6 +286,10 @@ export class Myproducts implements OnInit {
   }
 
   getPaymentStatusLabel(payment: PaymentItem): string {
+    if (payment.isSubmission) {
+      return payment.submissionStatus === 'rejected' ? 'Rejected' : 'Pending Review';
+    }
+
     const normalized = this.getNormalizedPaymentStatus(payment);
     if (normalized === 'paid') {
       return 'Paid';
@@ -271,6 +303,10 @@ export class Myproducts implements OnInit {
   }
 
   getPaymentStatusClass(payment: PaymentItem): string {
+    if (payment.isSubmission) {
+      return payment.submissionStatus === 'rejected' ? 'rejected' : 'pending';
+    }
+
     const normalized = this.getNormalizedPaymentStatus(payment);
     if (normalized === 'paid') {
       return 'paid';
