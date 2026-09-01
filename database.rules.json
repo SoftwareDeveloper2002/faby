@@ -1,0 +1,44 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "adminProducts": {
+      ".read": true,
+      ".write": "auth != null && auth.token.firebase.sign_in_provider === 'password'"
+    },
+
+    "productDeposits": {
+      ".read": true,
+      ".write": "auth != null && auth.token.firebase.sign_in_provider === 'password'"
+    },
+
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.firebase.sign_in_provider === 'password'"
+    },
+
+    "successfulPayments": {
+      ".indexOn": ["email"],
+      ".read": true,
+      "$paymentId": {
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'password' || !data.exists())"
+      }
+    },
+
+    "paymentSubmissions": {
+      ".indexOn": ["email"],
+      ".read": "auth != null",
+      "$submissionId": {
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'password' || !data.exists())"
+      }
+    },
+
+    "appUsers": {
+      ".read": "auth != null && auth.token.firebase.sign_in_provider === 'password'",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}

@@ -8,7 +8,13 @@
   <section class="card-grid" aria-label="Table and chair rental packages">
     @for (item of packages; track item.id) {
       <article class="item-card" [class.popular]="item.isPopular">
-        <img class="card-image" [src]="item.imageUrl || '/faby.png'" [alt]="item.name + ' image'" (error)="onImageError($event)" />
+        <img
+          class="card-image clickable-image"
+          [src]="item.imageUrl || '/faby.png'"
+          [alt]="item.name + ' image'"
+          (error)="onImageError($event)"
+          (click)="openLightbox(item.imageUrl, item.name + ' image')"
+        />
 
         <div class="top-row">
           <h2>{{ item.name }}</h2>
@@ -77,3 +83,5 @@
     </article>
   </section>
 </main>
+
+<app-image-lightbox [imageUrl]="lightboxImageUrl" [alt]="lightboxAlt" (closed)="lightboxImageUrl = null"></app-image-lightbox>

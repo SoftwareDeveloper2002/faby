@@ -141,6 +141,38 @@
 		</article>
 	</section>
 
+	<section class="visibility-panel" aria-labelledby="visibility-settings-title">
+		<article class="card">
+			<h2 id="visibility-settings-title">Category Visibility</h2>
+			<p class="visibility-copy">
+				Turn a category off to hide its link from the public site navigation right away. The listing page itself still
+				works if someone has the direct link — this only controls what shows up in the menu.
+			</p>
+
+			@if (visibilityError) {
+				<p class="message error">{{ visibilityError }}</p>
+			}
+
+			<div class="visibility-row">
+				@for (item of categoryNavItems; track item.value) {
+					<div class="visibility-item">
+						<span class="visibility-label">{{ item.label }}</span>
+						<label class="switch" [attr.aria-label]="(categoryVisibility[item.value] ? 'Hide' : 'Show') + ' ' + item.label + ' in navigation'">
+							<input
+								type="checkbox"
+								[checked]="categoryVisibility[item.value]"
+								[disabled]="togglingCategory === item.value"
+								(change)="toggleCategoryVisibility(item.value)"
+							/>
+							<span class="slider"></span>
+						</label>
+						<span class="visibility-state">{{ categoryVisibility[item.value] ? 'Visible' : 'Hidden' }}</span>
+					</div>
+				}
+			</div>
+		</article>
+	</section>
+
 	<section class="password-panel" aria-labelledby="change-password-title">
 		<article class="card password-card">
 			<h2 id="change-password-title">Change Password</h2>

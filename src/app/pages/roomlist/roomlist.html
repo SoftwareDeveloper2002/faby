@@ -9,7 +9,13 @@
 		@for (room of rooms; track room.id) {
 			<article class="room-card" [class.popular]="room.isPopular">
 				<div class="room-visual">
-					<img class="room-image" [src]="room.imageUrl || '/faby.png'" [alt]="room.name + ' image'" (error)="onImageError($event)" />
+					<img
+						class="room-image clickable-image"
+						[src]="room.imageUrl || '/faby.png'"
+						[alt]="room.name + ' image'"
+						(error)="onImageError($event)"
+						(click)="openLightbox(room.imageUrl, room.name + ' image')"
+					/>
 				</div>
 
 				<div class="room-content">
@@ -81,3 +87,5 @@
 		</article>
 	</section>
 </main>
+
+<app-image-lightbox [imageUrl]="lightboxImageUrl" [alt]="lightboxAlt" (closed)="lightboxImageUrl = null"></app-image-lightbox>

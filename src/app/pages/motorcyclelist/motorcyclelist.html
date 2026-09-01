@@ -70,7 +70,13 @@
 				@for (motorcycle of motorcycles; track motorcycle.id) {
 					<li [class.active]="selectedMotorcycleId === motorcycle.id">
 						<button type="button" (click)="selectedMotorcycleId = motorcycle.id; onSelectedMotorcycleChange()">
-							<img class="motorcycle-image" [src]="motorcycle.imageUrl || '/faby.png'" [alt]="motorcycle.name + ' image'" (error)="onImageError($event)">
+							<img
+								class="motorcycle-image clickable-image"
+								[src]="motorcycle.imageUrl || '/faby.png'"
+								[alt]="motorcycle.name + ' image'"
+								(error)="onImageError($event)"
+								(click)="$event.stopPropagation(); openLightbox(motorcycle.imageUrl, motorcycle.name + ' image')"
+							>
 							<span class="motorcycle-name">{{ motorcycle.name }}</span>
 							<span class="motorcycle-rate">PHP {{ motorcycle.dailyRate }} / day</span>
 							@if (motorcycle.helmetIncluded) {
@@ -86,3 +92,5 @@
 		}
 	</section>
 </main>
+
+<app-image-lightbox [imageUrl]="lightboxImageUrl" [alt]="lightboxAlt" (closed)="lightboxImageUrl = null"></app-image-lightbox>

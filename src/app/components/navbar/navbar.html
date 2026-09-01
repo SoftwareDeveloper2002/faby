@@ -7,10 +7,18 @@
 
 		<div class="menu-links">
 			<a routerLink="/" class="nav-link">Home</a>
-			<a routerLink="/motorcycle-list" class="nav-link">Motorcycle</a>
-      <a routerLink="/room-list" class="nav-link">Rooms</a>
-      <a routerLink="/tent-list" class="nav-link">Tents</a>
-      <a routerLink="/table-chair-list" class="nav-link">Tables & Chair</a>
+			@if (categoryVisibility.motorcycle) {
+				<a routerLink="/motorcycle-list" class="nav-link">Motorcycle</a>
+			}
+			@if (categoryVisibility.inn) {
+				<a routerLink="/room-list" class="nav-link">Rooms</a>
+			}
+			@if (categoryVisibility.tent) {
+				<a routerLink="/tent-list" class="nav-link">Tents</a>
+			}
+			@if (categoryVisibility.table_chair) {
+				<a routerLink="/table-chair-list" class="nav-link">Tables & Chair</a>
+			}
 		</div>
 
 		<div class="auth-area">
@@ -26,7 +34,6 @@
 
 					@if (dropdownOpen) {
 						<div class="dropdown" role="menu">
-							<button type="button" role="menuitem" (click)="goToProfile()">Profile</button>
 							<button type="button" role="menuitem" (click)="goToProducts()">My Booking/Service</button>
 							<button type="button" role="menuitem" class="logout-item" (click)="logout()">Logout</button>
 						</div>

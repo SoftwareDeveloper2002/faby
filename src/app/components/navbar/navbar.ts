@@ -4,11 +4,20 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { Auth, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { getDatabase, onValue, ref, type Unsubscribe } from 'firebase/database';
+
+type CategoryVisibility = {
+  motorcycle: boolean;
+  tent: boolean;
+  table_chair: boolean;
+  inn: boolean;
+};
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
   authDomain: 'faby-be0b9.firebaseapp.com',
   projectId: 'faby-be0b9',
+  databaseURL: 'https://faby-be0b9-default-rtdb.asia-southeast1.firebasedatabase.app',
   storageBucket: 'faby-be0b9.firebasestorage.app',
   messagingSenderId: '71671731623',
   appId: '1:71671731623:web:6df23b47797e12b9aad282',
@@ -21,13 +30,22 @@ const firebaseConfig = {
   templateUrl: './navbar.html',
   styleUrl: './navbar.sass',
 })
-export class Navbar {
+export class Navbar implements OnDestroy {
   isAuthenticated = false;
   userName = '';
   dropdownOpen = false;
+  // Defaults to all-visible so links don't flash-hide before Firebase responds; an admin
+  // toggling a category off in Settings updates this live for anyone already browsing.
+  categoryVisibility: CategoryVisibility = {
+    motorcycle: true,
+    tent: true,
+    table_chair: true,
+    inn: true,
+  };
   private readonly routerSubscription: Subscription;
   private readonly auth: Auth;
   private readonly authSubscription: Subscription;
+  private readonly unsubscribeVisibility: Unsubscribe;
 
   constructor(
     private readonly router: Router,
@@ -35,6 +53,17 @@ export class Navbar {
   ) {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     this.auth = getAuth(app);
+
+    const db = getDatabase(app, firebaseConfig.databaseURL);
+    this.unsubscribeVisibility = onValue(ref(db, 'settings/categoryVisibility'), (snapshot) => {
+      const data = (snapshot.val() ?? {}) as Partial<CategoryVisibility>;
+      this.categoryVisibility = {
+        motorcycle: data.motorcycle !== false,
+        tent: data.tent !== false,
+        table_chair: data.table_chair !== false,
+        inn: data.inn !== false,
+      };
+    });
 
     this.syncAuthState();
     this.routerSubscription = this.router.events.subscribe((event) => {
@@ -62,6 +91,7 @@ export class Navbar {
   ngOnDestroy(): void {
     this.routerSubscription.unsubscribe();
     this.authSubscription.unsubscribe();
+    this.unsubscribeVisibility();
   }
 
   @HostListener('window:storage')
@@ -92,11 +122,6 @@ export class Navbar {
   toggleDropdown(event: MouseEvent): void {
     event.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
-  }
-
-  goToProfile(): void {
-    this.dropdownOpen = false;
-    this.router.navigate(['/profile']);
   }
 
   goToProducts(): void {

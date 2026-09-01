@@ -8,7 +8,13 @@
   <section class="card-grid" aria-label="Available tent rentals">
     @for (tent of tents; track tent.id) {
       <article class="item-card" [class.popular]="tent.isPopular">
-        <img class="card-image" [src]="tent.imageUrl || '/faby.png'" [alt]="tent.name + ' image'" (error)="onImageError($event)" />
+        <img
+          class="card-image clickable-image"
+          [src]="tent.imageUrl || '/faby.png'"
+          [alt]="tent.name + ' image'"
+          (error)="onImageError($event)"
+          (click)="openLightbox(tent.imageUrl, tent.name + ' image')"
+        />
 
         <div class="top-row">
           <h2>{{ tent.name }}</h2>
@@ -85,3 +91,5 @@
     <button class="book-now" type="button" (click)="proceedBooking()" [disabled]="!canProceedBooking">Book Now</button>
   </section>
 </main>
+
+<app-image-lightbox [imageUrl]="lightboxImageUrl" [alt]="lightboxAlt" (closed)="lightboxImageUrl = null"></app-image-lightbox>

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AvailabilityCalendarComponent } from '../../components/availability-calendar/availability-calendar';
+import { ImageLightbox } from '../../components/image-lightbox/image-lightbox';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { get, getDatabase, ref } from 'firebase/database';
 
@@ -72,7 +73,7 @@ type CalendarMonth = {
 
 @Component({
   selector: 'app-tentlist',
-  imports: [CommonModule, FormsModule, AvailabilityCalendarComponent],
+  imports: [CommonModule, FormsModule, AvailabilityCalendarComponent, ImageLightbox],
   templateUrl: './tentlist.html',
   styleUrl: './tentlist.sass',
 })
@@ -143,6 +144,14 @@ export class Tentlist implements OnInit {
     }
     img.src = '/faby.png';
     img.classList.add('fallback-image');
+  }
+
+  lightboxImageUrl: string | null = null;
+  lightboxAlt = '';
+
+  openLightbox(imageUrl: string | undefined, alt: string): void {
+    this.lightboxImageUrl = imageUrl || '/faby.png';
+    this.lightboxAlt = alt;
   }
 
   get selectedTent(): TentUnit | null {

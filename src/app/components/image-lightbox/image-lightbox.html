@@ -1,0 +1,6 @@
+@if (imageUrl) {
+	<div class="lightbox-backdrop" (click)="closed.emit()" role="dialog" aria-modal="true" [attr.aria-label]="alt">
+		<button type="button" class="lightbox-close" (click)="closed.emit()" aria-label="Close full-screen image">&times;</button>
+		<img class="lightbox-image" [src]="imageUrl" [alt]="alt" (click)="$event.stopPropagation()" />
+	</div>
+}

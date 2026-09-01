@@ -77,23 +77,42 @@ export class Settings implements OnInit, OnDestroy {
   depositError = '';
   depositSuccess = '';
 
+  // Which category nav links are shown on the public site.
+  readonly categoryNavItems: Array<{ value: ProductCategory; label: string }> = [
+    { value: 'motorcycle', label: 'Motorcycle' },
+    { value: 'inn', label: 'Rooms' },
+    { value: 'tent', label: 'Tents' },
+    { value: 'table_chair', label: 'Tables & Chair' },
+  ];
+  categoryVisibility: Record<ProductCategory, boolean> = {
+    motorcycle: true,
+    tent: true,
+    table_chair: true,
+    inn: true,
+  };
+  togglingCategory: ProductCategory | null = null;
+  visibilityError = '';
+
   private qrCodeFile: File | null = null;
   private adminProducts: AdminProductOption[] = [];
   private productDeposits: Record<string, { amount: number; type: DepositType; intervalDays: number }> = {};
   private unsubscribePaymentSettings: Unsubscribe | null = null;
   private unsubscribeProducts: Unsubscribe | null = null;
   private unsubscribeDeposits: Unsubscribe | null = null;
+  private unsubscribeVisibility: Unsubscribe | null = null;
 
   ngOnInit(): void {
     this.subscribeToPaymentSettings();
     this.subscribeToAdminProducts();
     this.subscribeToDeposits();
+    this.subscribeToCategoryVisibility();
   }
 
   ngOnDestroy(): void {
     this.unsubscribePaymentSettings?.();
     this.unsubscribeProducts?.();
     this.unsubscribeDeposits?.();
+    this.unsubscribeVisibility?.();
   }
 
   async changePassword(): Promise<void> {
@@ -254,6 +273,40 @@ export class Settings implements OnInit, OnDestroy {
     } finally {
       row.isSaving = false;
     }
+  }
+
+  /** Flips one category's public visibility immediately — no separate Save step, same as the
+   *  per-product show/hide switch on Admin Products, and for the same reason: a toggle that
+   *  needs a Save click is a toggle people forget to actually apply. */
+  async toggleCategoryVisibility(category: ProductCategory): Promise<void> {
+    this.visibilityError = '';
+    const nextValue = !this.categoryVisibility[category];
+    this.togglingCategory = category;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      await update(ref(db, 'settings/categoryVisibility'), { [category]: nextValue });
+    } catch (error) {
+      this.visibilityError = this.getErrorMessage(error);
+    } finally {
+      this.togglingCategory = null;
+    }
+  }
+
+  private subscribeToCategoryVisibility(): void {
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
+
+    this.unsubscribeVisibility = onValue(ref(db, 'settings/categoryVisibility'), (snapshot) => {
+      const data = (snapshot.val() ?? {}) as Partial<Record<ProductCategory, boolean>>;
+      this.categoryVisibility = {
+        motorcycle: data.motorcycle !== false,
+        tent: data.tent !== false,
+        table_chair: data.table_chair !== false,
+        inn: data.inn !== false,
+      };
+    });
   }
 
   private subscribeToPaymentSettings(): void {

@@ -26,7 +26,6 @@ export const routes: Routes = [
   { path: 'room-list', component: Roomlist, title: 'Monting Balay | Room List' },
   { path: 'tent-list', component: Tentlist, title: 'Monting Balay | Tent List' },
   { path: 'table-chair-list', component: Tablechairlist, title: 'Monting Balay | Table and Chair List' },
-  { path: 'profile', component: Maintenance, title: 'Faby | Profile' },
   { path: 'my-products', component: Myproducts, title: 'Faby | My Products' },
   { path: 'booking-confirm', component: Bookingconfirm, title: 'Monting Balay | Confirm Booking' },
   { path: 'payment', component: Payment, title: 'Monting Balay | Payment' },

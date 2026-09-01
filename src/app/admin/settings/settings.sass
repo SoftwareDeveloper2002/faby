@@ -17,7 +17,8 @@
 
 .hero,
 .settings-grid,
-.deposit-panel
+.deposit-panel,
+.visibility-panel
 	max-width: 72rem
 	margin: 0 auto
 
@@ -47,6 +48,9 @@ h1
 	grid-template-columns: repeat(3, minmax(0, 1fr))
 
 .deposit-panel
+	margin-top: .75rem
+
+.visibility-panel
 	margin-top: .75rem
 
 .password-panel
@@ -241,6 +245,85 @@ button[disabled]
 .empty
 	margin: 0
 	color: var(--ink-soft)
+
+.visibility-copy
+	margin-bottom: .8rem !important
+
+.visibility-row
+	display: flex
+	flex-wrap: wrap
+	gap: .6rem
+
+.visibility-item
+	display: flex
+	align-items: center
+	gap: .55rem
+	padding: .6rem .8rem
+	border: 1px solid var(--line)
+	border-radius: .7rem
+	background: #fffdf8
+
+.visibility-label
+	font-weight: 700
+	font-size: .88rem
+
+.visibility-state
+	font-size: .76rem
+	font-weight: 700
+	color: var(--ink-soft)
+	min-width: 3.4rem
+
+// Standard CSS toggle switch built from a native checkbox for accessibility (same pattern as
+// the per-product show/hide switch on Admin Products).
+.switch
+	position: relative
+	display: inline-block
+	width: 2.3rem
+	height: 1.3rem
+	flex-shrink: 0
+	cursor: pointer
+
+.switch input
+	position: absolute
+	width: 100%
+	height: 100%
+	margin: 0
+	opacity: 0
+	cursor: pointer
+	z-index: 1
+
+.switch .slider
+	position: absolute
+	inset: 0
+	background: #e3cfae
+	border-radius: 999px
+	transition: background-color .18s ease
+
+.switch .slider::before
+	content: ""
+	position: absolute
+	top: .16rem
+	left: .16rem
+	width: .98rem
+	height: .98rem
+	border-radius: 50%
+	background: #fff
+	box-shadow: 0 2px 4px rgba(0, 0, 0, .18)
+	transition: transform .18s ease
+
+.switch input:checked + .slider
+	background: #8fbf9a
+
+.switch input:checked + .slider::before
+	transform: translateX(1rem)
+
+.switch input:focus-visible + .slider
+	outline: 2px solid #e7c29a
+	outline-offset: 2px
+
+.switch input:disabled + .slider
+	opacity: .6
+	cursor: not-allowed
 
 @media (max-width: 980px)
 	.settings-grid
