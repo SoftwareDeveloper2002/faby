@@ -8,9 +8,16 @@ import {
   reauthenticateWithCredential,
   updatePassword,
 } from 'firebase/auth';
-import { getDatabase, onValue, ref, update, type Unsubscribe } from 'firebase/database';
+import { getDatabase, onValue, ref, set, update, type Unsubscribe } from 'firebase/database';
 import { Navbar } from '../component/navbar/navbar';
 import { DepositType } from '../../shared/deposit';
+import {
+  DEFAULT_THEME,
+  FONT_PAIRINGS,
+  mergeThemeWithDefaults,
+  type FontPairingKey,
+  type SiteTheme,
+} from '../../shared/theme';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
@@ -93,6 +100,22 @@ export class Settings implements OnInit, OnDestroy {
   togglingCategory: ProductCategory | null = null;
   visibilityError = '';
 
+  // Website Builder — brand colors, fonts, logo, and homepage text, with a draft/live split so
+  // you can experiment safely and only push it to visitors once you're happy with it.
+  draftTheme: SiteTheme = structuredClone(DEFAULT_THEME);
+  liveTheme: SiteTheme = structuredClone(DEFAULT_THEME);
+  readonly fontPairingOptions: Array<{ key: FontPairingKey; label: string }> = Object.entries(FONT_PAIRINGS).map(
+    ([key, value]) => ({ key: key as FontPairingKey, label: value.label }),
+  );
+  logoPreview = '';
+  isUploadingLogo = false;
+  isSavingTheme = false;
+  isPublishingTheme = false;
+  themeError = '';
+  themeSuccess = '';
+
+  private hasDraftTheme = false;
+  private logoFile: File | null = null;
   private qrCodeFile: File | null = null;
   private adminProducts: AdminProductOption[] = [];
   private productDeposits: Record<string, { amount: number; type: DepositType; intervalDays: number }> = {};
@@ -100,12 +123,16 @@ export class Settings implements OnInit, OnDestroy {
   private unsubscribeProducts: Unsubscribe | null = null;
   private unsubscribeDeposits: Unsubscribe | null = null;
   private unsubscribeVisibility: Unsubscribe | null = null;
+  private unsubscribeLiveTheme: Unsubscribe | null = null;
+  private unsubscribeDraftTheme: Unsubscribe | null = null;
 
   ngOnInit(): void {
     this.subscribeToPaymentSettings();
     this.subscribeToAdminProducts();
     this.subscribeToDeposits();
     this.subscribeToCategoryVisibility();
+    this.subscribeToLiveTheme();
+    this.subscribeToDraftTheme();
   }
 
   ngOnDestroy(): void {
@@ -113,6 +140,8 @@ export class Settings implements OnInit, OnDestroy {
     this.unsubscribeProducts?.();
     this.unsubscribeDeposits?.();
     this.unsubscribeVisibility?.();
+    this.unsubscribeLiveTheme?.();
+    this.unsubscribeDraftTheme?.();
   }
 
   async changePassword(): Promise<void> {
@@ -306,6 +335,124 @@ export class Settings implements OnInit, OnDestroy {
         table_chair: data.table_chair !== false,
         inn: data.inn !== false,
       };
+    });
+  }
+
+  /** Persists whatever's currently in `draftTheme` — call this after any field changes. Only
+   *  affects tabs opened with ?theme_preview=1 (the Settings "Preview" button) until Published. */
+  async saveDraftTheme(): Promise<void> {
+    this.themeError = '';
+    this.themeSuccess = '';
+    this.isSavingTheme = true;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      await set(ref(db, 'settings/theme/draft'), this.draftTheme);
+      this.hasDraftTheme = true;
+    } catch (error) {
+      this.themeError = this.getErrorMessage(error);
+    } finally {
+      this.isSavingTheme = false;
+    }
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.themeError = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.themeError = 'Please select a valid image file.';
+      input.value = '';
+      return;
+    }
+
+    this.logoFile = file;
+    this.logoPreview = URL.createObjectURL(file);
+  }
+
+  async saveLogo(): Promise<void> {
+    if (!this.logoFile) {
+      this.themeError = 'Choose a logo image first.';
+      return;
+    }
+
+    this.isUploadingLogo = true;
+    this.themeError = '';
+    this.themeSuccess = '';
+
+    try {
+      const uploadedUrl = await this.uploadImage(this.logoFile, 'site-theme', `logo-${Date.now()}`);
+      this.draftTheme.logoUrl = uploadedUrl;
+      await this.saveDraftTheme();
+      this.logoFile = null;
+      this.logoPreview = '';
+    } catch (error) {
+      this.themeError = this.getErrorMessage(error);
+    } finally {
+      this.isUploadingLogo = false;
+    }
+  }
+
+  /** Opens the real homepage in a new tab rendering your unpublished draft, so you can check it
+   *  looks right before anyone else sees it. */
+  openThemePreview(): void {
+    window.open('/?theme_preview=1', '_blank', 'noopener');
+  }
+
+  /** Makes the current draft what every visitor sees. */
+  async publishTheme(): Promise<void> {
+    this.themeError = '';
+    this.themeSuccess = '';
+    this.isPublishingTheme = true;
+
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      const db = getDatabase(app, firebaseConfig.databaseURL);
+      await set(ref(db, 'settings/theme/live'), this.draftTheme);
+      this.themeSuccess = 'Published! Your site now shows these changes to everyone.';
+    } catch (error) {
+      this.themeError = this.getErrorMessage(error);
+    } finally {
+      this.isPublishingTheme = false;
+    }
+  }
+
+  /** Throws away unpublished experiments and goes back to what's currently live. */
+  async discardDraftTheme(): Promise<void> {
+    this.themeError = '';
+    this.themeSuccess = '';
+    this.draftTheme = structuredClone(this.liveTheme);
+    await this.saveDraftTheme();
+  }
+
+  private subscribeToLiveTheme(): void {
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
+
+    this.unsubscribeLiveTheme = onValue(ref(db, 'settings/theme/live'), (snapshot) => {
+      this.liveTheme = mergeThemeWithDefaults(snapshot.val());
+      if (!this.hasDraftTheme) {
+        // No experiment started yet — start editing from what's currently published.
+        this.draftTheme = structuredClone(this.liveTheme);
+      }
+    });
+  }
+
+  private subscribeToDraftTheme(): void {
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
+
+    this.unsubscribeDraftTheme = onValue(ref(db, 'settings/theme/draft'), (snapshot) => {
+      if (snapshot.exists()) {
+        this.hasDraftTheme = true;
+        this.draftTheme = mergeThemeWithDefaults(snapshot.val());
+      }
     });
   }
 

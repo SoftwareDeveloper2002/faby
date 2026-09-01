@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { get, getDatabase, onValue, ref, type Unsubscribe } from 'firebase/database';
+import { getActiveThemePath, mergeThemeWithDefaults } from '../../shared/theme';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD5DVdin4xLlT86KIiXy2wetJ04fyEeWBA',
@@ -47,19 +48,29 @@ export class Landing implements OnInit, OnDestroy {
   };
 
   private unsubscribeVisibility: Unsubscribe | null = null;
+  private unsubscribeTheme: Unsubscribe | null = null;
+  private heroTitleOverride = '';
+  heroCopy = 'Everything you need for your next stay or trip, reserved in one place.';
 
   async ngOnInit(): Promise<void> {
     this.subscribeToCategoryVisibility();
+    this.subscribeToTheme();
     await this.loadCheapestRates();
   }
 
   ngOnDestroy(): void {
     this.unsubscribeVisibility?.();
+    this.unsubscribeTheme?.();
   }
 
-  /** Builds the hero heading from whichever categories are actually turned on, instead of a
-   *  hardcoded "Inn Booking and Motorcycle Rental" that goes stale the moment either is hidden. */
+  /** An admin-set override (Settings → Website Builder) always wins; otherwise this builds the
+   *  heading from whichever categories are actually turned on, instead of a hardcoded "Inn
+   *  Booking and Motorcycle Rental" that goes stale the moment either is hidden. */
   get heroTitle(): string {
+    if (this.heroTitleOverride) {
+      return this.heroTitleOverride;
+    }
+
     const labels: string[] = [];
     if (this.categoryVisibility.inn) labels.push('Inn Booking');
     if (this.categoryVisibility.motorcycle) labels.push('Motorcycle Rental');
@@ -70,6 +81,17 @@ export class Landing implements OnInit, OnDestroy {
     if (labels.length === 1) return labels[0];
     if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
     return `${labels.slice(0, -1).join(', ')}, and ${labels[labels.length - 1]}`;
+  }
+
+  private subscribeToTheme(): void {
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
+
+    this.unsubscribeTheme = onValue(ref(db, getActiveThemePath()), (snapshot) => {
+      const theme = mergeThemeWithDefaults(snapshot.val());
+      this.heroTitleOverride = theme.homepage.heroTitleOverride;
+      this.heroCopy = theme.homepage.heroCopyOverride || 'Everything you need for your next stay or trip, reserved in one place.';
+    });
   }
 
   get showBookingGrid(): boolean {

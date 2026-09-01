@@ -1,8 +1,12 @@
 <header class="navbar-wrap">
 	<nav class="navbar" aria-label="Main navigation">
 		<a class="brand" routerLink="/">
-			<span class="brand-dot"></span>
-			<span class="brand-text">Faby</span>
+			@if (logoUrl && logoUrl !== '/faby.png') {
+				<img class="brand-logo-img" [src]="logoUrl" alt="Site logo" />
+			} @else {
+				<span class="brand-dot"></span>
+				<span class="brand-text">Faby</span>
+			}
 		</a>
 
 		<div class="menu-links">

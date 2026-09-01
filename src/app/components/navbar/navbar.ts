@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { Auth, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { getDatabase, onValue, ref, type Unsubscribe } from 'firebase/database';
+import { DEFAULT_THEME, getActiveThemePath, mergeThemeWithDefaults } from '../../shared/theme';
 
 type CategoryVisibility = {
   motorcycle: boolean;
@@ -42,10 +43,12 @@ export class Navbar implements OnDestroy {
     table_chair: true,
     inn: true,
   };
+  logoUrl = DEFAULT_THEME.logoUrl;
   private readonly routerSubscription: Subscription;
   private readonly auth: Auth;
   private readonly authSubscription: Subscription;
   private readonly unsubscribeVisibility: Unsubscribe;
+  private readonly unsubscribeTheme: Unsubscribe;
 
   constructor(
     private readonly router: Router,
@@ -63,6 +66,10 @@ export class Navbar implements OnDestroy {
         table_chair: data.table_chair !== false,
         inn: data.inn !== false,
       };
+    });
+
+    this.unsubscribeTheme = onValue(ref(db, getActiveThemePath()), (snapshot) => {
+      this.logoUrl = mergeThemeWithDefaults(snapshot.val()).logoUrl;
     });
 
     this.syncAuthState();
@@ -92,6 +99,7 @@ export class Navbar implements OnDestroy {
     this.routerSubscription.unsubscribe();
     this.authSubscription.unsubscribe();
     this.unsubscribeVisibility();
+    this.unsubscribeTheme();
   }
 
   @HostListener('window:storage')

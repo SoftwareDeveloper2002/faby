@@ -173,6 +173,108 @@
 		</article>
 	</section>
 
+	<section class="builder-panel" aria-labelledby="builder-settings-title">
+		<article class="card">
+			<div class="builder-head">
+				<div>
+					<h2 id="builder-settings-title">Website Builder</h2>
+					<p class="builder-copy">
+						Experiment freely — nothing here goes live until you click <strong>Publish</strong>. Use
+						<strong>Preview</strong> to open the real homepage showing your unpublished changes.
+					</p>
+				</div>
+				<div class="builder-actions">
+					<button type="button" class="btn-secondary" (click)="openThemePreview()">Preview</button>
+					<button type="button" class="btn-secondary" [disabled]="isSavingTheme" (click)="discardDraftTheme()">Discard Draft</button>
+					<button type="button" [disabled]="isPublishingTheme" (click)="publishTheme()">
+						{{ isPublishingTheme ? 'Publishing...' : 'Publish' }}
+					</button>
+				</div>
+			</div>
+
+			@if (themeError) {
+				<p class="message error">{{ themeError }}</p>
+			}
+
+			@if (themeSuccess) {
+				<p class="message success">{{ themeSuccess }}</p>
+			}
+
+			<div class="builder-grid">
+				<div class="builder-block">
+					<h3>Brand Colors</h3>
+					<div class="color-row">
+						<label class="color-field">
+							Accent
+							<input type="color" [(ngModel)]="draftTheme.colors.accent" (change)="saveDraftTheme()" />
+						</label>
+						<label class="color-field">
+							Background start
+							<input type="color" [(ngModel)]="draftTheme.colors.bg1" (change)="saveDraftTheme()" />
+						</label>
+						<label class="color-field">
+							Background end
+							<input type="color" [(ngModel)]="draftTheme.colors.bg2" (change)="saveDraftTheme()" />
+						</label>
+					</div>
+				</div>
+
+				<div class="builder-block">
+					<h3>Font Pairing</h3>
+					<select [(ngModel)]="draftTheme.fontPairing" (change)="saveDraftTheme()">
+						@for (option of fontPairingOptions; track option.key) {
+							<option [value]="option.key">{{ option.label }}</option>
+						}
+					</select>
+				</div>
+
+				<div class="builder-block">
+					<h3>Logo</h3>
+					<div class="logo-row">
+						<div class="logo-preview-wrap">
+							@if (logoPreview || draftTheme.logoUrl !== '/faby.png') {
+								<img class="logo-preview" [src]="logoPreview || draftTheme.logoUrl" alt="Site logo preview" />
+							} @else {
+								<div class="logo-placeholder">Default Faby mark</div>
+							}
+						</div>
+						<div class="logo-controls">
+							<label>
+								Upload logo image
+								<input type="file" accept="image/*" (change)="onLogoSelected($event)" />
+							</label>
+							<button type="button" [disabled]="isUploadingLogo" (click)="saveLogo()">
+								{{ isUploadingLogo ? 'Uploading...' : 'Save Logo' }}
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="builder-block builder-block-wide">
+					<h3>Homepage Text</h3>
+					<label>
+						Headline override (leave blank to auto-generate from active categories)
+						<input
+							type="text"
+							[(ngModel)]="draftTheme.homepage.heroTitleOverride"
+							(change)="saveDraftTheme()"
+							placeholder="e.g. Monting Balay Getaways"
+						/>
+					</label>
+					<label>
+						Tagline override
+						<textarea
+							rows="2"
+							[(ngModel)]="draftTheme.homepage.heroCopyOverride"
+							(change)="saveDraftTheme()"
+							placeholder="Everything you need for your next stay or trip, reserved in one place."
+						></textarea>
+					</label>
+				</div>
+			</div>
+		</article>
+	</section>
+
 	<section class="password-panel" aria-labelledby="change-password-title">
 		<article class="card password-card">
 			<h2 id="change-password-title">Change Password</h2>
